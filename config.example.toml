@@ -1,0 +1,6 @@
+[server_config]
+addr = "0.0.0.0:1140"
+jwt_secret_key = "test"
+
+[orm_config]
+dsn="postgres://postgres:postgres@localhost:5432/quotes"

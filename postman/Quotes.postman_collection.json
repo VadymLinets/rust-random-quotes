@@ -1,0 +1,306 @@
+{
+	"info": {
+		"_postman_id": "8b0bcb9c-fee5-4ea9-981c-714fbad29af1",
+		"name": "Quotes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16237817"
+	},
+	"item": [
+		{
+			"name": "Heartbeat",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:1140/heartbeat",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "1140",
+					"path": [
+						"heartbeat"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "OK",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://0.0.0.0:1140/heartbeat",
+							"protocol": "http",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "1140",
+							"path": [
+								"heartbeat"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "plain",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sat, 04 May 2024 10:30:17 GMT"
+						},
+						{
+							"key": "Content-Length",
+							"value": "0"
+						}
+					],
+					"cookie": [],
+					"body": null
+				}
+			]
+		},
+		{
+			"name": "Get random quote",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:1140/?user_id=1",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "1140",
+					"path": [
+						""
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "OK",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://0.0.0.0:1140/?user_id=1",
+							"protocol": "http",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "1140",
+							"path": [
+								""
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 06 May 2024 06:43:30 GMT"
+						},
+						{
+							"key": "Content-Length",
+							"value": "180"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": \"YJVGmtWg9t\",\n    \"quote\": \"Friendship brings in a lot of honesty and trust into any relationship, especially a marriage.\",\n    \"author\": \"Farhan Akhtar\",\n    \"tags\": [\n        \"Friendship\"\n    ],\n    \"likes\": 0\n}"
+				}
+			]
+		},
+		{
+			"name": "Like quote",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:1140/like?user_id=1&quote_id=-LwlAMmYmOG",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "1140",
+					"path": [
+						"like"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "1"
+						},
+						{
+							"key": "quote_id",
+							"value": "-LwlAMmYmOG"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "OK",
+					"originalRequest": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://0.0.0.0:1140/like?user_id=1&quote_id=-LwlAMmYmOG",
+							"protocol": "http",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "1140",
+							"path": [
+								"like"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "1"
+								},
+								{
+									"key": "quote_id",
+									"value": "-LwlAMmYmOG"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "plain",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Sat, 04 May 2024 09:17:41 GMT"
+						},
+						{
+							"key": "Content-Length",
+							"value": "0"
+						}
+					],
+					"cookie": [],
+					"body": null
+				}
+			]
+		},
+		{
+			"name": "Get same quote",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://0.0.0.0:1140/same?user_id=1&quote_id=YJVGmtWg9t",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "1140",
+					"path": [
+						"same"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "1"
+						},
+						{
+							"key": "quote_id",
+							"value": "YJVGmtWg9t"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "OK",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://0.0.0.0:1140/same?user_id=2&quote_id=YJVGmtWg9t",
+							"protocol": "http",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "1140",
+							"path": [
+								"same"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "2"
+								},
+								{
+									"key": "quote_id",
+									"value": "YJVGmtWg9t"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 06 May 2024 06:44:02 GMT"
+						},
+						{
+							"key": "Content-Length",
+							"value": "177"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": \"3dgyDeYuO_m8\",\n    \"quote\": \"When one tugs at a single thing in nature, he finds it attached to the rest of the world.\",\n    \"author\": \"John Muir\",\n    \"tags\": [\n        \"Famous Quotes\"\n    ],\n    \"likes\": 0\n}"
+				}
+			]
+		}
+	]
+}

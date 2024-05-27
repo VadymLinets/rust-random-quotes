@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  backend:
+    build:
+      context: ..
+    container_name: quotes
+    ports:
+      - '${SERVER_CONTAINER_PORT}:1140'
+    restart: always

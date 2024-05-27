@@ -1,0 +1,22 @@
+# Configs
+.env
+.env.example
+config.example.toml
+
+# IDE
+.idea
+.vscode
+.run
+
+# Build info
+target
+migration/target
+
+# Git
+.git
+.gitignore
+
+# Other
+containers
+Taskfile.yml
+

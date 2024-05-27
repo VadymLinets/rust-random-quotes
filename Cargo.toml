@@ -1,0 +1,26 @@
+[package]
+name = "quotes-rs"
+version = "0.1.0"
+publish = false
+edition = "2021"
+
+[workspace]
+members = [".", "migration"]
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0.86"
+rocket = { version = "0.5.1", features = ["json"] }
+sea-orm = { version = "0.12.15", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros" ] }
+ulid = "1.1.2"
+migration = { path = "migration" }
+serde = { version = "1.0.202", features = ["derive"] }
+serde_derive = "1.0.203"
+config = "0.14.0"
+rocket_cors = "0.6.0"
+async-trait = "0.1.80"
+log = "0.4.21"
+thiserror = "1.0.61"
+rand = "0.8.5"
+reqwest = "0.12.4"
+serde_json = "1.0.117"

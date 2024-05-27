@@ -1,0 +1,79 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  run:
+    desc: Build and run the rust binary.
+    deps: [database-up]
+    cmds:
+      - cargo build
+      - ./target/debug/basic-rust
+
+  container-run:
+    desc: Run application in the docker or podman container. It will also start up the database.
+    deps: [database-up]
+    dir: '{{.USER_WORKING_DIR}}/containers'
+    aliases: [crun]
+    cmd: bash -c "$RUNNER-compose -f service.yml up -d --no-deps --build"
+
+  container-stop:
+    desc: Stop docker or podman container with running application.
+    dir: '{{.USER_WORKING_DIR}}/containers'
+    aliases: [cstop]
+    cmd: bash -c "$RUNNER-compose -f service.yml down"
+
+  database-up:
+    desc: Create the database container throw docker or podman.
+    dir: '{{.USER_WORKING_DIR}}/containers'
+    aliases: [db]
+    cmd: bash -c "$RUNNER-compose -f database.yml up -d"
+
+  database-down:
+    desc: Drop the database container throw docker or podman.
+    dir: '{{.USER_WORKING_DIR}}/containers'
+    aliases: [dbd]
+    cmd: bash -c "$RUNNER-compose -f database.yml down"
+
+  migrate:
+    desc: Migrate database. Will execute `database-up` task automatically.
+    dir: '{{.USER_WORKING_DIR}}'
+    aliases: [mg]
+    deps: [database-up]
+    env:
+      POSTGRES_URL: postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_ADDR}}/{{.POSTGRES_DB}}
+    cmds:
+      - cargo install sea-orm-cli
+      - sea-orm-cli migrate -u $POSTGRES_URL -s public
+      - sea-orm-cli generate entity -u $POSTGRES_URL -s public --with-serde both --expanded-format -o src/database/structs
+
+  lint:
+    desc: Runs clippy
+    cmds: 
+      - cargo clippy
+      - cd migration && cargo clippy
+
+  lint-fix:
+    desc: Runs clippy
+    aliases: [lf]
+    cmds: 
+      - cargo clippy --fix
+      - cd migration && cargo clippy --fix
+
+  format:
+    desc: Auto formating rust code
+    aliases: [f]
+    cmd: cargo fmt
+
+  upgrade-libraries:
+    desc: Upgrades all libraries that used on the project
+    aliases: [upgr]
+    cmds:
+      - cargo install cargo-edit
+      - cargo upgrade --incompatible
+
+  test:
+    desc: Run tests.
+    cmds:
+      - cargo install cargo-maelstrom 
+      - cargo maelstrom
