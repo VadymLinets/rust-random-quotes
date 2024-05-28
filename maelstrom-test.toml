@@ -7,11 +7,17 @@ user = 0
 group = 0
 
 layers = [
-    { stubs = [ "/{proc,sys,tmp}/", "/dev/{full,null,random,urandom,zero}" ] }
+    { stubs = [ "/{proc,tmp}/"] }
 ]
 
 mounts = [
     { type = "tmp", mount_point = "/tmp" },
     { type = "proc", mount_point = "/proc" },
-    { type = "sys", mount_point = "/sys" },
 ]
+
+[[directives]]
+filter = "test.equals(integration_test)"
+network = "local"
+added_layers = [{ stubs = [ "/var/run/docker.sock" ] }]
+added_mounts = [{ type = "bind", mount_point = "/var/run/docker.sock", local_path = "/var/run/docker.sock", read_only = false }]
+added_environment = { RUNS_IN_CONTAINER = "true" }

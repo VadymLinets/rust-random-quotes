@@ -72,5 +72,4 @@ tasks:
     desc: Run tests.
     cmds:
       - cargo install cargo-maelstrom 
-      - cargo maelstrom -x "test.equals(integration_test)"
-      - cargo test --test '*'
+      - cargo maelstrom

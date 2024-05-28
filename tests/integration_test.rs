@@ -3,7 +3,7 @@ use fake::{
     faker::{lorem, name},
     uuid, Fake, Faker,
 };
-use std::time::Duration;
+use std::{env, time::Duration};
 use testcontainers::{runners::AsyncRunner, RunnableImage};
 use testcontainers_modules::postgres;
 use tokio::time::{sleep_until, Instant};
@@ -28,11 +28,21 @@ async fn test_integration() {
     .await
     .expect("postgres is not available");
 
-    let connection_string = format!(
-        "postgres://{db_user}:{db_password}@{}:{}/{db_name}",
-        db_container.get_host().await.unwrap(),
-        db_container.get_host_port_ipv4(5432).await.unwrap()
-    );
+    let runs_in_container = env::var("RUNS_IN_CONTAINER")
+        .ok()
+        .map_or(false, |value| value.eq("true"));
+
+    let connection_string = match runs_in_container {
+        true => format!(
+            "postgres://{db_user}:{db_password}@{}:5432/{db_name}",
+            db_container.get_bridge_ip_address().await.unwrap()
+        ),
+        false => format!(
+            "postgres://{db_user}:{db_password}@{}:{}/{db_name}",
+            db_container.get_host().await.unwrap(),
+            db_container.get_host_port_ipv4(5432).await.unwrap()
+        ),
+    };
 
     let cfg = cfg::GlobalConfig {
         server_config: cfg::ServerConfig {
