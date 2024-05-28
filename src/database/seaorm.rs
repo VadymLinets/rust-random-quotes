@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use migration::{Migrator, MigratorTrait};
 use sea_orm::ActiveValue::Set;
-use sea_orm::QueryOrder;
+use sea_orm::{sea_query, QueryOrder};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Database, DatabaseConnection, EntityTrait, QueryFilter,
     QuerySelect, QueryTrait,
@@ -117,7 +117,18 @@ impl SeaORM {
     }
 
     pub async fn save_quote(&self, quote: quotes_active_model) -> Result<()> {
-        quote.save(&self.db).await?;
+        quotes::insert(quote)
+            .on_conflict(
+                sea_query::OnConflict::column(quotes_columns::Id)
+                    .update_columns(vec![
+                        quotes_columns::Author,
+                        quotes_columns::Quote,
+                        quotes_columns::Tags,
+                    ])
+                    .to_owned(),
+            )
+            .exec(&self.db)
+            .await?;
         Ok(())
     }
 
@@ -127,7 +138,14 @@ impl SeaORM {
             quote_id: Set(quote_id),
             liked: Set(false),
         };
-        view.save(&self.db).await?;
+        views::insert(view)
+            .on_conflict(
+                sea_query::OnConflict::columns(vec![views_columns::UserId, views_columns::QuoteId])
+                    .update_column(views_columns::Liked)
+                    .to_owned(),
+            )
+            .exec(&self.db)
+            .await?;
         Ok(())
     }
 

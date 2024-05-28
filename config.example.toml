@@ -4,3 +4,6 @@ jwt_secret_key = "test"
 
 [orm_config]
 dsn="postgres://postgres:postgres@localhost:5432/quotes"
+
+[quotes_config]
+random_quote_chance=20.0

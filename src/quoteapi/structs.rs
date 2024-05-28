@@ -1,13 +1,14 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::database::structs::quotes::Model as Quotes;
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Quote {
-    id: String,
-    content: String,
-    author: String,
-    tags: Vec<String>,
+    #[serde(rename = "_id")]
+    pub id: String,
+    pub content: String,
+    pub author: String,
+    pub tags: Vec<String>,
 }
 
 pub fn to_database(quote: Quote) -> Quotes {

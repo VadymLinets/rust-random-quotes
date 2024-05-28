@@ -1,7 +1,7 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use rocket::http::{Method, Status};
 use rocket::response::{content, status};
-use rocket::{catch, catchers, get, routes, Build, Request, Rocket, State};
+use rocket::{catch, catchers, get, patch, routes, Build, Request, Rocket, State};
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use std::collections::HashSet;
 
@@ -24,7 +24,8 @@ pub fn register_routes(
         max_age: Some(300),
         ..Default::default()
     }
-    .to_cors()?;
+    .to_cors()
+    .context("failed to make cors")?;
 
     Ok(builder
         .attach(cors)
@@ -33,8 +34,8 @@ pub fn register_routes(
         .register("/", catchers![catch_default])
         .mount("/heartbeat", routes![heartbeat_handler])
         .mount("/", routes![get_quote_handler])
-        .mount("/same", routes![like_quote_handler])
-        .mount("/like", routes![get_same_quote_handler]))
+        .mount("/", routes![like_quote_handler])
+        .mount("/", routes![get_same_quote_handler]))
 }
 
 #[catch(default)]
@@ -47,7 +48,7 @@ async fn heartbeat_handler(h: &State<Heartbeat>) -> Status {
     match h.ping_database().await {
         Ok(_) => Status::Ok,
         Err(err) => {
-            log::error!("failed to ping database: {}", err);
+            log::error!("failed to ping database: {err}");
             Status::InternalServerError
         }
     }
@@ -62,29 +63,29 @@ async fn get_quote_handler(
         Ok(quote) => match serde_json::to_string(&quote) {
             Ok(value) => status::Custom(Status::Ok, Some(content::RawJson(value))),
             Err(err) => {
-                log::error!("failed to serialize quote: {}", err);
+                log::error!("failed to serialize quote: {err}");
                 status::Custom(Status::InternalServerError, None)
             }
         },
         Err(err) => {
-            log::error!("failed to get quote: {}", err);
+            log::error!("failed to get quote: {err}");
             status::Custom(Status::InternalServerError, None)
         }
     }
 }
 
-#[get("/?<user_id>&<quote_id>")]
+#[patch("/like?<user_id>&<quote_id>")]
 async fn like_quote_handler(quote_id: String, user_id: String, quotes: &State<Service>) -> Status {
     match quotes.like_quote(user_id, quote_id).await {
         Ok(_) => Status::Ok,
         Err(err) => {
-            log::error!("failed to like quote: {}", err);
+            log::error!("failed to like quote: {err}");
             Status::InternalServerError
         }
     }
 }
 
-#[get("/?<user_id>&<quote_id>")]
+#[get("/same?<user_id>&<quote_id>")]
 async fn get_same_quote_handler(
     quote_id: String,
     user_id: String,
@@ -94,12 +95,12 @@ async fn get_same_quote_handler(
         Ok(quote) => match serde_json::to_string(&quote) {
             Ok(value) => status::Custom(Status::Ok, Some(content::RawJson(value))),
             Err(err) => {
-                log::error!("failed to serialize quote: {}", err);
+                log::error!("failed to serialize quote: {err}");
                 status::Custom(Status::InternalServerError, None)
             }
         },
         Err(err) => {
-            log::error!("failed to get same quote: {}", err);
+            log::error!("failed to get same quote: {err}");
             status::Custom(Status::InternalServerError, None)
         }
     }

@@ -6,7 +6,7 @@ use rocket::{build, Config};
 use std::net::SocketAddr;
 
 pub async fn start(cfg: ServerConfig, h: Heartbeat, quotes: quote::service::Service) {
-    let addr: SocketAddr = cfg.addr.parse().expect("Failed to parse addresses");
+    let addr: SocketAddr = cfg.addr.parse().expect("failed to parse addresses");
 
     let config = Config {
         port: addr.port(),
@@ -16,8 +16,8 @@ pub async fn start(cfg: ServerConfig, h: Heartbeat, quotes: quote::service::Serv
 
     let rocket = build().configure(&config);
     handlers::register_routes(rocket, h, quotes)
-        .expect("Failed to register fairings")
+        .expect("failed to register fairings")
         .launch()
         .await
-        .expect("Failed to start server");
+        .expect("failed to start server");
 }

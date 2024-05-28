@@ -1,8 +1,8 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::database::structs::quotes::Model as Quotes;
 
-#[derive(Serialize)]
+#[derive(PartialEq, PartialOrd, Debug, Serialize, Deserialize)]
 pub struct Quote {
     id: String,
     quote: String,

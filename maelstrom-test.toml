@@ -1,0 +1,17 @@
+[[directives]]
+include_shared_libraries = true
+network = "loopback"
+enable_writable_file_system = false
+working_directory = "/"
+user = 0
+group = 0
+
+layers = [
+    { stubs = [ "/{proc,sys,tmp}/", "/dev/{full,null,random,urandom,zero}" ] }
+]
+
+mounts = [
+    { type = "tmp", mount_point = "/tmp" },
+    { type = "proc", mount_point = "/proc" },
+    { type = "sys", mount_point = "/sys" },
+]

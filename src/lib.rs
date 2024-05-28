@@ -1,16 +1,13 @@
-mod config;
-mod database;
+pub mod config;
+pub mod database;
 mod heartbeat;
-mod quote;
+pub mod quote;
 mod quoteapi;
 mod server;
 
 use std::sync::Arc;
 
-#[rocket::main]
-async fn main() {
-    let cfg = config::cfg::GlobalConfig::get().expect("failed to get config");
-
+pub async fn start(cfg: config::cfg::GlobalConfig) {
     let db = database::seaorm::SeaORM::new(cfg.orm_config)
         .await
         .expect("failed to init database");

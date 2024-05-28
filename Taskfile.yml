@@ -6,9 +6,7 @@ tasks:
   run:
     desc: Build and run the rust binary.
     deps: [database-up]
-    cmds:
-      - cargo build
-      - ./target/debug/basic-rust
+    cmd: cargo run
 
   container-run:
     desc: Run application in the docker or podman container. It will also start up the database.
@@ -49,9 +47,7 @@ tasks:
 
   lint:
     desc: Runs clippy
-    cmds: 
-      - cargo clippy
-      - cd migration && cargo clippy
+    cmd: cargo clippy
 
   lint-fix:
     desc: Runs clippy
@@ -62,7 +58,7 @@ tasks:
 
   format:
     desc: Auto formating rust code
-    aliases: [f]
+    aliases: [f, fmt]
     cmd: cargo fmt
 
   upgrade-libraries:
@@ -76,4 +72,5 @@ tasks:
     desc: Run tests.
     cmds:
       - cargo install cargo-maelstrom 
-      - cargo maelstrom
+      - cargo maelstrom -x "test.equals(integration_test)"
+      - cargo test --test '*'

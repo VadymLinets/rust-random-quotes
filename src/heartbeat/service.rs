@@ -1,7 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 #[async_trait]
 pub trait Database {
@@ -9,15 +8,15 @@ pub trait Database {
 }
 
 pub struct Heartbeat {
-    db: Arc<Mutex<dyn Database + Send>>,
+    db: Arc<dyn Database + Send + Sync>,
 }
 
 impl Heartbeat {
     pub async fn ping_database(&self) -> Result<()> {
-        self.db.lock().await.ping().await
+        self.db.ping().await
     }
 
-    pub fn new(db: Arc<Mutex<dyn Database + Send>>) -> Self {
+    pub fn new(db: Arc<dyn Database + Send + Sync>) -> Self {
         Heartbeat { db }
     }
 }
