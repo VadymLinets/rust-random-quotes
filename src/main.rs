@@ -7,18 +7,25 @@ mod server;
 
 use std::sync::Arc;
 
+use config::cfg::GlobalConfig;
+use database::seaorm::SeaORM;
+use heartbeat::service::Heartbeat;
+use quote::service as quote_srv;
+use quoteapi::service as quoteapi_srv;
+use server::srv::start as start_server;
+
 #[rocket::main]
 async fn main() {
-    let cfg = config::cfg::GlobalConfig::get().expect("failed to get config");
+    let cfg = GlobalConfig::get().expect("failed to get config");
 
-    let db = database::seaorm::SeaORM::new(cfg.orm_config)
+    let db = SeaORM::new(cfg.orm_config)
         .await
-        .expect("failed to init database");
+        .expect("failed to start database");
 
     let db = Arc::new(db);
-    let heartbeat = heartbeat::service::Heartbeat::new(db.clone());
-    let quoteapi = quoteapi::service::Service::new(db.clone());
-    let quote = quote::service::Service::new(cfg.quotes_config, db, Arc::new(quoteapi));
+    let heartbeat = Heartbeat::new(db.clone());
+    let quoteapi = quoteapi_srv::Service::new(db.clone());
+    let quote = quote_srv::Service::new(cfg.quotes_config, db, Arc::new(quoteapi));
 
-    server::srv::start(cfg.server_config, heartbeat, quote).await;
+    start_server(cfg.server_config, heartbeat, quote).await;
 }
