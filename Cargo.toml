@@ -14,7 +14,7 @@ rocket = { version = "0.5.1", features = ["json"] }
 sea-orm = { version = "0.12.15", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros" ] }
 ulid = "1.1.2"
 migration = { path = "migration" }
-serde = { version = "1.0.202", features = ["derive"] }
+serde = { version = "1.0.203", features = ["derive"] }
 serde_derive = "1.0.203"
 config = "0.14.0"
 rocket_cors = "0.6.0"
