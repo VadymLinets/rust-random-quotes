@@ -27,7 +27,7 @@ It's a basic service that shows how to work with rust and different rust librari
 4. Copy the [config.example.toml](config.example.toml) file and change variables to what you need
 
     ```shell
-    cp config.example.toml config.toml
+    cp ./configs/config.example.toml ./configs/config.toml
     ```
 
 5. Run the following command:
@@ -42,3 +42,23 @@ It's a basic service that shows how to work with rust and different rust librari
     ```shell
     task run
     ```
+
+## Run in container mode
+
+1. Create a special container config file and change variables to what you need:
+
+   ```shell
+    cp ./configs/config.example.toml ./configs/config.container.toml
+    ```
+
+2. Run the following command:
+
+   ```shell
+   cd containers && docker-compose -f database.yml up -d
+   ```
+
+3. Or you can run the following taskfile command:
+
+   ```shell
+   task crun
+   ```

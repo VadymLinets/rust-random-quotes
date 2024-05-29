@@ -20,5 +20,6 @@ rust-project.json
 .idea
 
 ### Config files
-config.toml
+configs/*
+!configs/config.example.toml
 .env

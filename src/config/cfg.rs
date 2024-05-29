@@ -12,7 +12,7 @@ pub struct GlobalConfig {
 impl GlobalConfig {
     pub fn get() -> Result<Self> {
         let s = Config::builder()
-            .add_source(File::with_name("config").required(true))
+            .add_source(File::with_name("configs/config").required(true))
             .build()
             .context("Failed to build context")?;
 
