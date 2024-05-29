@@ -9,7 +9,7 @@ use testcontainers_modules::postgres;
 use tokio::time::{sleep_until, Instant};
 
 use quotes_rs::{config::cfg, database::seaorm};
-use quotes_rs::{database::structs::quotes::Model as quote_model, quote};
+use quotes_rs::{database::structs::quotes::Model as quote_model, quote::structs as quote_structs};
 
 #[tokio::test]
 async fn test_integration() {
@@ -26,7 +26,7 @@ async fn test_integration() {
     .with_tag("latest")
     .start()
     .await
-    .expect("postgres is not available");
+    .expect("postgres is not started properly");
 
     let runs_in_container = env::var("RUNS_IN_CONTAINER")
         .ok()
@@ -130,11 +130,12 @@ async fn get_quote(
         .text()
         .await
         .expect("failed to receive quote from server");
-    let received_quote: quote::structs::Quote =
+
+    let received_quote: quote_structs::Quote =
         serde_json::from_str(body.as_str()).expect("failed to parse quote");
     assert_eq!(
         received_quote,
-        quote::structs::from_database_quote_to_quote(quote.clone())
+        quote_structs::from_database_quote_to_quote(quote.clone())
     );
 
     let database_quote = db
@@ -209,10 +210,11 @@ async fn get_same_quote(
         .text()
         .await
         .expect("failed to receive quote from server");
-    let received_quote: quote::structs::Quote =
+
+    let received_quote: quote_structs::Quote =
         serde_json::from_str(body.as_str()).expect("failed to parse quote");
     assert_eq!(
         received_quote,
-        quote::structs::from_database_quote_to_quote(same_quote.clone())
+        quote_structs::from_database_quote_to_quote(same_quote.clone())
     );
 }

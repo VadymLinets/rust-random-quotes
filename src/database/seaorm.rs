@@ -1,5 +1,3 @@
-use crate::config::cfg::ORMConfig;
-use crate::{heartbeat, quote, quoteapi};
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use migration::{Migrator, MigratorTrait};
@@ -10,6 +8,9 @@ use sea_orm::{
     QuerySelect, QueryTrait,
 };
 use thiserror::Error;
+
+use crate::config::cfg::ORMConfig;
+use crate::{heartbeat, quote::service as quote_service, quoteapi::service as quoteapi_service};
 
 use super::structs::prelude::Quotes as quotes;
 use super::structs::prelude::Views as views;
@@ -35,18 +36,6 @@ impl SeaORM {
         self.db.ping().await.context("failed to ping database")
     }
 
-    pub async fn new(cfg: ORMConfig) -> Result<Self> {
-        let connection = Database::connect(cfg.dsn.as_str())
-            .await
-            .context("failed to connect to db")?;
-
-        Migrator::up(&connection, None)
-            .await
-            .context("failed to migrate")?;
-
-        Ok(SeaORM { db: connection })
-    }
-
     pub async fn get_quote(&self, quote_id: String) -> Result<quotes_model> {
         let quote = quotes::find_by_id(quote_id).one(&self.db).await?;
         match quote {
@@ -55,7 +44,7 @@ impl SeaORM {
         }
     }
 
-    pub async fn get_quotes(&self, user_id: String) -> Result<Vec<quotes_model>> {
+    async fn get_quotes(&self, user_id: String) -> Result<Vec<quotes_model>> {
         let viewed = quotes::find()
             .select_only()
             .column(quotes_columns::Id)
@@ -69,7 +58,7 @@ impl SeaORM {
             .await?)
     }
 
-    pub async fn get_same_quote(
+    async fn get_same_quote(
         &self,
         user_id: String,
         viewed_quote: quotes_model,
@@ -103,7 +92,7 @@ impl SeaORM {
         }
     }
 
-    pub async fn get_view(&self, user_id: String, quote_id: String) -> Result<views_model> {
+    async fn get_view(&self, user_id: String, quote_id: String) -> Result<views_model> {
         let view: Option<views_model> = views::find()
             .filter(views_columns::UserId.eq(user_id))
             .filter(views_columns::QuoteId.eq(quote_id))
@@ -132,7 +121,7 @@ impl SeaORM {
         Ok(())
     }
 
-    pub async fn mark_as_viewed(&self, user_id: String, quote_id: String) -> Result<()> {
+    async fn mark_as_viewed(&self, user_id: String, quote_id: String) -> Result<()> {
         let view = views_active_model {
             user_id: Set(user_id),
             quote_id: Set(quote_id),
@@ -149,7 +138,7 @@ impl SeaORM {
         Ok(())
     }
 
-    pub async fn mark_as_liked(&self, user_id: String, quote_id: String) -> Result<()> {
+    async fn mark_as_liked(&self, user_id: String, quote_id: String) -> Result<()> {
         let view = views_active_model {
             user_id: Set(user_id),
             quote_id: Set(quote_id),
@@ -159,12 +148,24 @@ impl SeaORM {
         Ok(())
     }
 
-    pub async fn like_quote(&self, quote_id: String) -> Result<()> {
+    async fn like_quote(&self, quote_id: String) -> Result<()> {
         let quote = self.get_quote(quote_id).await?;
         let mut quote_active: quotes_active_model = quote.clone().into();
         quote_active.likes = Set(quote.likes + 1);
         quote_active.update(&self.db).await?;
         Ok(())
+    }
+
+    pub async fn new(cfg: ORMConfig) -> Result<Self> {
+        let connection = Database::connect(cfg.dsn.as_str())
+            .await
+            .context("failed to connect to db")?;
+
+        Migrator::up(&connection, None)
+            .await
+            .context("failed to migrate")?;
+
+        Ok(SeaORM { db: connection })
     }
 }
 
@@ -176,7 +177,7 @@ impl heartbeat::service::Database for SeaORM {
 }
 
 #[async_trait]
-impl quote::service::Database for SeaORM {
+impl quote_service::Database for SeaORM {
     async fn get_quote(&self, quote_id: String) -> Result<quotes_model> {
         self.get_quote(quote_id).await
     }
@@ -211,7 +212,7 @@ impl quote::service::Database for SeaORM {
 }
 
 #[async_trait]
-impl quoteapi::service::Database for SeaORM {
+impl quoteapi_service::Database for SeaORM {
     async fn save_quote(&self, quote: quotes_model) -> Result<()> {
         self.save_quote(quote.into()).await
     }

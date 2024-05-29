@@ -3,15 +3,15 @@ use async_trait::async_trait;
 use rand::Rng;
 use std::sync::Arc;
 
-#[cfg(test)]
-use mockall::automock;
-
 use crate::config::cfg::QuotesConfig;
 use crate::database::seaorm::Errors;
 use crate::database::structs::quotes::Model as Quotes;
 use crate::database::structs::views::Model as Views;
 
 use super::structs::{self, from_database_quote_to_quote};
+
+#[cfg(test)]
+use mockall::automock;
 
 const ONE_HUNDRED_PERCENT: f64 = 100.0;
 
@@ -89,13 +89,13 @@ impl Service {
         user_id: String,
         quote_id: String,
     ) -> Result<structs::Quote> {
-        let quote = self
+        let viewed_quote = self
             .db
             .get_quote(quote_id.clone())
             .await
             .context("failed to get viewed quote")?;
 
-        let quote = match self.db.get_same_quote(user_id.clone(), quote).await {
+        let quote = match self.db.get_same_quote(user_id.clone(), viewed_quote).await {
             Ok(quote) => quote,
             Err(err) => match err.downcast_ref::<Errors>() {
                 Some(Errors::ErrNotFound) => self
@@ -162,17 +162,17 @@ impl Service {
 
 #[cfg(test)]
 mod tests {
-    use crate::database::structs::quotes::Model as quote_model;
-    use crate::database::structs::views::Model as view_model;
-
-    use super::*;
-
     use enclose::enclose;
     use fake::{
         faker::{lorem, name},
         uuid, Fake, Faker,
     };
     use mockall::predicate::*;
+
+    use crate::database::structs::quotes::Model as quote_model;
+    use crate::database::structs::views::Model as view_model;
+
+    use super::*;
 
     #[tokio::test]
     async fn test_get_quote_success() {

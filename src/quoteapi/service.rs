@@ -2,12 +2,12 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-#[cfg(test)]
-use mockall::automock;
-
 use crate::{database::structs::quotes::Model as Quotes, quote};
 
 use super::structs;
+
+#[cfg(test)]
+use mockall::automock;
 
 const RANDOM_QUOTE_URL: &str = "https://api.quotable.io/random";
 
@@ -32,13 +32,13 @@ impl Service {
             .await
             .context("failed to receive random quote from site")?;
 
-        let bytes = resp
-            .bytes()
+        let data = resp
+            .text()
             .await
-            .context("failed to receive response bytes")?;
+            .context("failed to receive response text")?;
 
-        let quote: structs::Quote = serde_json::from_slice(bytes.to_vec().as_slice())
-            .context("failed to deserialize random quote")?;
+        let quote: structs::Quote =
+            serde_json::from_str(&data).context("failed to deserialize random quote")?;
 
         let quote = structs::to_database(quote);
         self.db

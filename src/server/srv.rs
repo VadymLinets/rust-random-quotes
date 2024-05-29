@@ -1,9 +1,10 @@
+use rocket::{build, Config};
+use std::net::SocketAddr;
+
 use crate::config::cfg::ServerConfig;
 use crate::heartbeat::service::Heartbeat;
 use crate::quote;
 use crate::server::handlers;
-use rocket::{build, Config};
-use std::net::SocketAddr;
 
 pub async fn start(cfg: ServerConfig, h: Heartbeat, quotes: quote::service::Service) {
     let addr: SocketAddr = cfg.addr.parse().expect("failed to parse addresses");
