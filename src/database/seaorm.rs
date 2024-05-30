@@ -10,7 +10,7 @@ use sea_orm::{
 use thiserror::Error;
 
 use crate::config::cfg::ORMConfig;
-use crate::{heartbeat, quote::service as quote_service, quoteapi::service as quoteapi_service};
+use crate::{heartbeat, quote::service as quote_service, quote_api::service as quote_api_service};
 
 use super::structs::prelude::Quotes as quotes;
 use super::structs::prelude::Views as views;
@@ -227,7 +227,7 @@ impl quote_service::Database for SeaORM {
 }
 
 #[async_trait]
-impl quoteapi_service::Database for SeaORM {
+impl quote_api_service::Database for SeaORM {
     async fn save_quote(&self, quote: quotes_model) -> Result<()> {
         self.save_quote(quote.into()).await
     }
