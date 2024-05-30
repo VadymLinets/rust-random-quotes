@@ -59,7 +59,7 @@ async fn get_quote_handler(
     user_id: String,
     quotes: &State<Service>,
 ) -> status::Custom<Option<content::RawJson<String>>> {
-    match quotes.get_quote(user_id).await {
+    match quotes.get_quote(&user_id).await {
         Ok(quote) => match serde_json::to_string(&quote) {
             Ok(value) => status::Custom(Status::Ok, Some(content::RawJson(value))),
             Err(err) => {
@@ -76,7 +76,7 @@ async fn get_quote_handler(
 
 #[patch("/like?<user_id>&<quote_id>")]
 async fn like_quote_handler(quote_id: String, user_id: String, quotes: &State<Service>) -> Status {
-    match quotes.like_quote(user_id, quote_id).await {
+    match quotes.like_quote(&user_id, &quote_id).await {
         Ok(_) => Status::Ok,
         Err(err) => {
             log::error!("failed to like quote: {err}");
@@ -91,7 +91,7 @@ async fn get_same_quote_handler(
     user_id: String,
     quotes: &State<Service>,
 ) -> status::Custom<Option<content::RawJson<String>>> {
-    match quotes.get_same_quote(user_id, quote_id).await {
+    match quotes.get_same_quote(&user_id, &quote_id).await {
         Ok(quote) => match serde_json::to_string(&quote) {
             Ok(value) => status::Custom(Status::Ok, Some(content::RawJson(value))),
             Err(err) => {

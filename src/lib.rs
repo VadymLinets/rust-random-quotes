@@ -22,7 +22,7 @@ pub async fn start(cfg: GlobalConfig) {
     let db = Arc::new(db);
     let heartbeat = Heartbeat::new(db.clone());
     let quoteapi = quoteapi_srv::Service::new(db.clone());
-    let quote = quote_srv::Service::new(cfg.quotes_config, db, Arc::new(quoteapi));
+    let quote = quote_srv::Service::new(cfg.quotes_config, db, Box::new(quoteapi));
 
     start_server(cfg.server_config, heartbeat, quote).await;
 }

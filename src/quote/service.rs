@@ -18,13 +18,13 @@ const ONE_HUNDRED_PERCENT: f64 = 100.0;
 #[cfg_attr(test, automock)]
 #[async_trait]
 pub trait Database {
-    async fn get_quote(&self, quote_id: String) -> Result<Quotes>;
-    async fn get_quotes(&self, user_id: String) -> Result<Vec<Quotes>>;
-    async fn get_same_quote(&self, user_id: String, viewed_quote: Quotes) -> Result<Quotes>;
-    async fn get_view(&self, user_id: String, quote_id: String) -> Result<Views>;
-    async fn mark_as_viewed(&self, user_id: String, quote_id: String) -> Result<()>;
-    async fn mark_as_liked(&self, user_id: String, quote_id: String) -> Result<()>;
-    async fn like_quote(&self, quote_id: String) -> Result<()>;
+    async fn get_quote(&self, quote_id: &str) -> Result<Quotes>;
+    async fn get_quotes(&self, user_id: &str) -> Result<Vec<Quotes>>;
+    async fn get_same_quote(&self, user_id: &str, viewed_quote: &Quotes) -> Result<Quotes>;
+    async fn get_view(&self, user_id: &str, quote_id: &str) -> Result<Views>;
+    async fn mark_as_viewed(&self, user_id: &str, quote_id: &str) -> Result<()>;
+    async fn mark_as_liked(&self, user_id: &str, quote_id: &str) -> Result<()>;
+    async fn like_quote(&self, quote_id: &str) -> Result<()>;
 }
 
 #[cfg_attr(test, automock)]
@@ -36,34 +36,34 @@ pub trait Api {
 pub struct Service {
     cfg: QuotesConfig,
     db: Arc<dyn Database + Send + Sync>,
-    api: Arc<dyn Api + Send + Sync>,
+    api: Box<dyn Api + Send + Sync>,
 }
 
 impl Service {
-    pub async fn get_quote(&self, user_id: String) -> Result<structs::Quote> {
+    pub async fn get_quote(&self, user_id: &str) -> Result<structs::Quote> {
         let quotes = self
             .db
-            .get_quotes(user_id.clone())
+            .get_quotes(user_id)
             .await
             .context("failed to get quotes")?;
 
         let quote = self
-            .randomize_quote(quotes)
+            .randomize_quote(&quotes)
             .await
             .context("failed to get random quote")?;
 
         self.db
-            .mark_as_viewed(user_id, quote.clone().id)
+            .mark_as_viewed(user_id, &quote.id)
             .await
             .context("failed to mark as viewed")?;
 
         Ok(from_database_quote_to_quote(quote))
     }
 
-    pub async fn like_quote(&self, user_id: String, quote_id: String) -> Result<()> {
+    pub async fn like_quote(&self, user_id: &str, quote_id: &str) -> Result<()> {
         let view = self
             .db
-            .get_view(user_id.clone(), quote_id.clone())
+            .get_view(user_id, quote_id)
             .await
             .context("failed to get view")?;
 
@@ -72,7 +72,7 @@ impl Service {
         }
 
         self.db
-            .like_quote(quote_id.clone())
+            .like_quote(quote_id)
             .await
             .context("failed to like quote")?;
 
@@ -84,18 +84,14 @@ impl Service {
         Ok(())
     }
 
-    pub async fn get_same_quote(
-        &self,
-        user_id: String,
-        quote_id: String,
-    ) -> Result<structs::Quote> {
+    pub async fn get_same_quote(&self, user_id: &str, quote_id: &str) -> Result<structs::Quote> {
         let viewed_quote = self
             .db
-            .get_quote(quote_id.clone())
+            .get_quote(quote_id)
             .await
             .context("failed to get viewed quote")?;
 
-        let quote = match self.db.get_same_quote(user_id.clone(), viewed_quote).await {
+        let quote = match self.db.get_same_quote(user_id, &viewed_quote).await {
             Ok(quote) => quote,
             Err(err) => match err.downcast_ref::<Errors>() {
                 Some(Errors::ErrNotFound) => self
@@ -118,36 +114,27 @@ impl Service {
     pub fn new(
         cfg: QuotesConfig,
         db: Arc<dyn Database + Send + Sync>,
-        api: Arc<dyn Api + Send + Sync>,
+        api: Box<dyn Api + Send + Sync>,
     ) -> Self {
         Service { cfg, db, api }
     }
 
-    async fn randomize_quote(&self, quotes: Vec<Quotes>) -> Result<Quotes> {
+    async fn randomize_quote(&self, quotes: &[Quotes]) -> Result<Quotes> {
         let random_percent = rand::thread_rng().gen_range(0.0..101.0);
         if (ONE_HUNDRED_PERCENT - self.cfg.random_quote_chance) > random_percent
             && !quotes.is_empty()
         {
-            let mut likes_count: f64 = 0.0;
-            for mut q in quotes.clone() {
-                if q.likes == 0 {
-                    q.likes += 1;
-                }
+            let likes_count = quotes.iter().fold(0.0, |acc, q| {
+                acc + if q.likes == 0 { 1.0 } else { q.likes as f64 }
+            });
 
-                likes_count += q.likes as f64;
-            }
-
-            let mut accumulator: f64 = 0.0;
+            let mut accumulator = 0.0;
             let del = likes_count * ONE_HUNDRED_PERCENT
                 / (ONE_HUNDRED_PERCENT - self.cfg.random_quote_chance);
 
             for (i, q) in quotes.iter().enumerate() {
-                let mut likes = q.likes;
-                if likes == 0 {
-                    likes += 1;
-                }
-
-                let percent = likes as f64 / del * ONE_HUNDRED_PERCENT;
+                let likes = if q.likes == 0 { 1.0 } else { q.likes as f64 };
+                let percent = likes / del * ONE_HUNDRED_PERCENT;
                 if percent + accumulator >= random_percent {
                     return Ok(quotes[i].to_owned());
                 }
@@ -196,8 +183,8 @@ mod tests {
             .with(eq(user_id.clone()), eq(quote_id))
             .returning(|_, _| Ok(()));
 
-        let service = new_service(None, (db, MockApi::new()));
-        let res = service.get_quote(user_id).await;
+        let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
+        let res = service.get_quote(&user_id).await;
         assert!(!res.is_err());
         assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
     }
@@ -230,13 +217,13 @@ mod tests {
             .returning(enclose! { (quote) move || Ok(quote.clone())});
 
         let service = new_service(
-            Some(QuotesConfig {
+            QuotesConfig {
                 random_quote_chance: 100.0,
-            }),
+            },
             (db, api),
         );
 
-        let res = service.get_quote(user_id).await;
+        let res = service.get_quote(&user_id).await;
         assert!(!res.is_err());
         assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
     }
@@ -265,8 +252,8 @@ mod tests {
             .with(eq(user_id.clone()), eq(quote_id.clone()))
             .returning(|_, _| Ok(()));
 
-        let service = new_service(None, (db, MockApi::new()));
-        let res = service.like_quote(user_id, quote_id).await;
+        let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
+        let res = service.like_quote(&user_id, &quote_id).await;
         assert!(!res.is_err());
     }
 
@@ -286,8 +273,8 @@ mod tests {
             .with(eq(user_id.clone()), eq(quote_id.clone()))
             .returning(move |_, _| Ok(view.clone()));
 
-        let service = new_service(None, (db, MockApi::new()));
-        let res = service.like_quote(user_id, quote_id).await;
+        let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
+        let res = service.like_quote(&user_id, &quote_id).await;
         assert!(!res.is_err());
     }
 
@@ -317,8 +304,8 @@ mod tests {
             .with(eq(user_id.clone()), eq(quote_id.clone()))
             .returning(|_, _| Ok(()));
 
-        let service = new_service(None, (db, MockApi::new()));
-        let res = service.get_same_quote(user_id, quote_id).await;
+        let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
+        let res = service.get_same_quote(&user_id, &quote_id).await;
         assert!(!res.is_err());
         assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
     }
@@ -354,20 +341,13 @@ mod tests {
         api.expect_get_random_quote()
             .returning(enclose! { (quote) move || Ok(quote.clone())});
 
-        let service = new_service(None, (db, api));
-        let res = service.get_same_quote(user_id, quote_id).await;
+        let service = new_service(QuotesConfig::default(), (db, api));
+        let res = service.get_same_quote(&user_id, &quote_id).await;
         assert!(!res.is_err());
         assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
     }
 
-    fn new_service(cfg: Option<QuotesConfig>, mocks: (MockDatabase, MockApi)) -> Service {
-        let cfg = match cfg {
-            Some(cfg) => cfg,
-            None => QuotesConfig {
-                random_quote_chance: 0.0,
-            },
-        };
-
-        Service::new(cfg, Arc::new(mocks.0), Arc::new(mocks.1))
+    fn new_service(cfg: QuotesConfig, mocks: (MockDatabase, MockApi)) -> Service {
+        Service::new(cfg, Arc::new(mocks.0), Box::new(mocks.1))
     }
 }

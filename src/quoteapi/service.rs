@@ -27,7 +27,7 @@ impl Service {
     pub async fn get_random_quote(&self) -> Result<Quotes> {
         let resp = self
             .client
-            .get(self.quote_url.clone())
+            .get(&self.quote_url)
             .send()
             .await
             .context("failed to receive random quote from site")?;
@@ -42,9 +42,10 @@ impl Service {
 
         let quote = structs::to_database(quote);
         self.db
-            .save_quote(quote.clone())
+            .save_quote(quote.to_owned())
             .await
             .context("failed to save new random quote")?;
+
         Ok(quote)
     }
 

@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use config::{Config, File};
 use serde_derive::Deserialize;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct GlobalConfig {
     pub server_config: ServerConfig,
     pub orm_config: ORMConfig,
@@ -20,17 +20,17 @@ impl GlobalConfig {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct ServerConfig {
     pub addr: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct ORMConfig {
     pub dsn: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct QuotesConfig {
     pub random_quote_chance: f64,
 }
