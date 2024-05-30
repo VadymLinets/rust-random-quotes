@@ -1,3 +1,4 @@
+mod actix_server;
 mod config;
 mod database;
 mod heartbeat;
@@ -12,9 +13,8 @@ use database::seaorm::SeaORM;
 use heartbeat::service::Heartbeat;
 use quote::service as quote_srv;
 use quote_api::service as quote_api_srv;
-use server::start as start_server;
 
-#[rocket::main]
+#[tokio::main]
 async fn main() {
     let cfg = GlobalConfig::get().expect("failed to get config");
 
@@ -27,5 +27,15 @@ async fn main() {
     let quote_api = quote_api_srv::Service::new(db.clone());
     let quote = quote_srv::Service::new(cfg.quotes_config, db, Box::new(quote_api));
 
-    start_server(cfg.server_config, heartbeat, quote).await;
+    if cfg.server_config.service_type.eq("actix") {
+        actix_server::start(cfg.server_config, heartbeat, quote)
+            .await
+            .expect("failed to create server")
+            .await
+            .expect("failed to start server");
+    } else {
+        server::start(cfg.server_config, heartbeat, quote)
+            .await
+            .expect("failed to start server");
+    }
 }

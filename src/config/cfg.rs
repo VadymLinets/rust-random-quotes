@@ -23,6 +23,7 @@ impl GlobalConfig {
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct ServerConfig {
     pub addr: String,
+    pub service_type: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]

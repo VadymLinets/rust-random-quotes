@@ -30,3 +30,5 @@ enclose = "1.2.0"
 mockito = "1.4.0"
 testcontainers = "0.17.0"
 testcontainers-modules = { version = "0.5.0", features = ["postgres"]}
+actix-web = "4.6.0"
+env_logger = "0.11.3"

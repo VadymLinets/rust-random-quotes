@@ -3,6 +3,7 @@ use fake::{
     faker::{lorem, name},
     uuid, Fake, Faker,
 };
+use rand::seq::SliceRandom;
 use std::{env, time::Duration};
 use testcontainers::{runners::AsyncRunner, RunnableImage};
 use testcontainers_modules::postgres;
@@ -47,6 +48,10 @@ async fn test_integration() {
     let cfg = cfg::GlobalConfig {
         server_config: cfg::ServerConfig {
             addr: "0.0.0.0:1141".to_string(),
+            service_type: vec!["actix", "rocket"]
+                .choose(&mut rand::thread_rng())
+                .unwrap()
+                .to_string(),
         },
         orm_config: cfg::ORMConfig {
             dsn: connection_string,
