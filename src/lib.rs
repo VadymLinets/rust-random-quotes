@@ -12,7 +12,7 @@ use database::seaorm::SeaORM;
 use heartbeat::service::Heartbeat;
 use quote::service as quote_srv;
 use quoteapi::service as quoteapi_srv;
-use server::srv::start as start_server;
+use server::start as start_server;
 
 pub async fn start(cfg: GlobalConfig) {
     let db = SeaORM::new(cfg.orm_config)
