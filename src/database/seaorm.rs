@@ -9,8 +9,10 @@ use sea_orm::{
 };
 use thiserror::Error;
 
-use crate::config::cfg::ORMConfig;
-use crate::{heartbeat, quote::service as quote_service, quote_api::service as quote_api_service};
+use crate::config::ORMConfig;
+use crate::{
+    heartbeat as heartbeat_service, quote as quote_service, quote_api as quote_api_service,
+};
 
 use super::structs::prelude::Quotes as quotes;
 use super::structs::prelude::Views as views;
@@ -185,7 +187,7 @@ impl SeaORM {
 }
 
 #[async_trait]
-impl heartbeat::service::Database for SeaORM {
+impl heartbeat_service::Database for SeaORM {
     async fn ping(&self) -> Result<()> {
         self.ping().await
     }

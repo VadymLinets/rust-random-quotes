@@ -9,7 +9,7 @@ use testcontainers::{runners::AsyncRunner, RunnableImage};
 use testcontainers_modules::postgres;
 use tokio::time::{sleep_until, Instant};
 
-use quotes_rs::{config::cfg, database::seaorm};
+use quotes_rs::{config, database::seaorm};
 use quotes_rs::{database::structs::quotes::Model as quote_model, quote::structs as quote_structs};
 
 #[tokio::test]
@@ -45,18 +45,18 @@ async fn test_integration() {
         ),
     };
 
-    let cfg = cfg::GlobalConfig {
-        server_config: cfg::ServerConfig {
+    let cfg = config::GlobalConfig {
+        server_config: config::ServerConfig {
             addr: "0.0.0.0:1141".to_string(),
             service_type: vec!["actix", "rocket"]
                 .choose(&mut rand::thread_rng())
                 .unwrap()
                 .to_string(),
         },
-        orm_config: cfg::ORMConfig {
+        orm_config: config::ORMConfig {
             dsn: connection_string,
         },
-        quotes_config: cfg::QuotesConfig {
+        quotes_config: config::QuotesConfig {
             random_quote_chance: 0.0,
         },
     };
@@ -110,7 +110,7 @@ async fn test_integration() {
 }
 
 async fn get_quote(
-    cfg: &cfg::ServerConfig,
+    cfg: &config::ServerConfig,
     db: &seaorm::SeaORM,
     client: &reqwest::Client,
     user_id: &str,
@@ -144,7 +144,7 @@ async fn get_quote(
 }
 
 async fn like_quote(
-    cfg: &cfg::ServerConfig,
+    cfg: &config::ServerConfig,
     db: &seaorm::SeaORM,
     client: &reqwest::Client,
     user_id: &str,
@@ -166,7 +166,7 @@ async fn like_quote(
 }
 
 async fn get_same_quote(
-    cfg: &cfg::ServerConfig,
+    cfg: &config::ServerConfig,
     db: &seaorm::SeaORM,
     client: &reqwest::Client,
     user_id: &str,

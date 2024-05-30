@@ -1,8 +1,8 @@
 use actix_web::{get, patch, web, HttpResponse, Responder};
 
 use crate::actix_server::structs;
-use crate::heartbeat::service::Heartbeat;
-use crate::quote::service::Service;
+use crate::heartbeat::Heartbeat;
+use crate::quote::Service;
 
 #[get("/heartbeat")]
 async fn heartbeat_handler(heartbeat: web::Data<Heartbeat>) -> impl Responder {

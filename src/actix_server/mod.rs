@@ -8,9 +8,9 @@ use anyhow::{Context, Result};
 use env_logger::Env;
 use std::net::SocketAddr;
 
-use crate::config::cfg::ServerConfig;
-use crate::heartbeat::service::Heartbeat;
-use crate::quote::service::Service;
+use crate::config::ServerConfig;
+use crate::heartbeat::Heartbeat;
+use crate::quote::Service;
 
 pub async fn start(cfg: ServerConfig, heartbeat: Heartbeat, quotes: Service) -> Result<Server> {
     let addr: SocketAddr = cfg.addr.parse().context("failed to parse address")?;

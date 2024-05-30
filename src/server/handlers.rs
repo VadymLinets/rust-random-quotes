@@ -5,8 +5,8 @@ use rocket::{catch, catchers, get, patch, routes, Build, Request, Rocket, State}
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use std::collections::HashSet;
 
-use crate::heartbeat::service::Heartbeat;
-use crate::quote::service::Service;
+use crate::heartbeat::Heartbeat;
+use crate::quote::Service;
 
 pub fn register_routes(
     builder: Rocket<Build>,
