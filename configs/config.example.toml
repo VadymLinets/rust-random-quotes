@@ -1,6 +1,6 @@
 [server_config]
 addr = "0.0.0.0:1140"
-service_type = "actix"
+service_type = "rocket" # actix
 
 [orm_config]
 dsn="postgres://postgres:postgres@localhost:5432/quotes"
