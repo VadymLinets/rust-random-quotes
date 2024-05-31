@@ -97,7 +97,7 @@ pub mod tools {
             let cfg = GlobalConfig {
                 server_config: ServerConfig {
                     addr: "0.0.0.0:1141".to_string(),
-                    service_type: vec!["actix", "rocket"]
+                    service_type: ["actix", "rocket"]
                         .choose(&mut rand::thread_rng())
                         .unwrap()
                         .to_string(),
