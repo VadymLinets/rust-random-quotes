@@ -114,11 +114,15 @@ impl Service {
     }
 
     pub fn new(
-        cfg: QuotesConfig,
+        cfg: &QuotesConfig,
         db: Arc<dyn Database + Send + Sync>,
         api: Box<dyn Api + Send + Sync>,
     ) -> Self {
-        Service { cfg, db, api }
+        Service {
+            cfg: cfg.to_owned(),
+            db,
+            api,
+        }
     }
 
     async fn randomize_quote(&self, quotes: &[Quotes]) -> Result<Quotes> {
@@ -350,6 +354,6 @@ mod tests {
     }
 
     fn new_service(cfg: QuotesConfig, mocks: (MockDatabase, MockApi)) -> Service {
-        Service::new(cfg, Arc::new(mocks.0), Box::new(mocks.1))
+        Service::new(&cfg, Arc::new(mocks.0), Box::new(mocks.1))
     }
 }

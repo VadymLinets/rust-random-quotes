@@ -15,24 +15,24 @@ use database::seaorm::SeaORM;
 async fn main() {
     let cfg = GlobalConfig::get().expect("failed to get config");
 
-    let db = SeaORM::new(cfg.orm_config)
+    let db = SeaORM::new(&cfg.orm_config)
         .await
         .expect("failed to start database");
 
     let db = Arc::new(db);
     let heartbeat = heartbeat::Heartbeat::new(db.clone());
     let quote_api = quote_api::Service::new(db.clone());
-    let quote = quote::Service::new(cfg.quotes_config, db, Box::new(quote_api));
+    let quote = quote::Service::new(&cfg.quotes_config, db, Box::new(quote_api));
 
     if cfg.server_config.service_type.eq("actix") {
-        actix_server::start(cfg.server_config, heartbeat, quote)
+        actix_server::start(&cfg.server_config, heartbeat, quote)
             .await
             .expect("failed to create server")
             .await
             .expect("failed to start server");
     } else {
-        server::start(cfg.server_config, heartbeat, quote)
+        server::start(&cfg.server_config, heartbeat, quote)
             .await
-            .expect("failed to start server");
+            .expect("failed to create server");
     }
 }

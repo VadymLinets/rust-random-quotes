@@ -173,7 +173,7 @@ impl SeaORM {
         Ok(())
     }
 
-    pub async fn new(cfg: ORMConfig) -> Result<Self> {
+    pub async fn new(cfg: &ORMConfig) -> Result<Self> {
         let connection = Database::connect(&cfg.dsn)
             .await
             .context("failed to connect to db")?;

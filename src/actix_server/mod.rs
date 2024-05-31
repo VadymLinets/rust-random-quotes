@@ -12,7 +12,7 @@ use crate::config::ServerConfig;
 use crate::heartbeat::Heartbeat;
 use crate::quote::Service;
 
-pub async fn start(cfg: ServerConfig, heartbeat: Heartbeat, quotes: Service) -> Result<Server> {
+pub async fn start(cfg: &ServerConfig, heartbeat: Heartbeat, quotes: Service) -> Result<Server> {
     let addr: SocketAddr = cfg.addr.parse().context("failed to parse address")?;
 
     let heartbeat = web::Data::new(heartbeat);

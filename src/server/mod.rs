@@ -8,7 +8,7 @@ use crate::config::ServerConfig;
 use crate::heartbeat::Heartbeat;
 use crate::quote::Service;
 
-pub async fn start(cfg: ServerConfig, heartbeat: Heartbeat, quotes: Service) -> Result<()> {
+pub async fn start(cfg: &ServerConfig, heartbeat: Heartbeat, quotes: Service) -> Result<()> {
     let addr: SocketAddr = cfg.addr.parse().context("failed to parse address")?;
 
     let config = Config {
