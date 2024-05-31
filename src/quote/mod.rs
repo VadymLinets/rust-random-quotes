@@ -191,7 +191,7 @@ mod tests {
 
         let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
         let res = service.get_quote(&user_id).await;
-        assert!(!res.is_err());
+        assert!(res.is_ok());
         assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
     }
 
@@ -230,7 +230,7 @@ mod tests {
         );
 
         let res = service.get_quote(&user_id).await;
-        assert!(!res.is_err());
+        assert!(res.is_ok());
         assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
     }
 
@@ -260,7 +260,7 @@ mod tests {
 
         let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
         let res = service.like_quote(&user_id, &quote_id).await;
-        assert!(!res.is_err());
+        assert!(res.is_ok());
     }
 
     #[tokio::test]
@@ -281,7 +281,7 @@ mod tests {
 
         let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
         let res = service.like_quote(&user_id, &quote_id).await;
-        assert!(!res.is_err());
+        assert!(res.is_ok());
     }
 
     #[tokio::test]
@@ -312,7 +312,7 @@ mod tests {
 
         let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
         let res = service.get_same_quote(&user_id, &quote_id).await;
-        assert!(!res.is_err());
+        assert!(res.is_ok());
         assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
     }
 
@@ -349,7 +349,7 @@ mod tests {
 
         let service = new_service(QuotesConfig::default(), (db, api));
         let res = service.get_same_quote(&user_id, &quote_id).await;
-        assert!(!res.is_err());
+        assert!(res.is_ok());
         assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
     }
 

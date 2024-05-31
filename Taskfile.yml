@@ -1,6 +1,6 @@
-version: '3'
+version: "3"
 
-dotenv: ['.env']
+dotenv: [".env"]
 
 tasks:
   run:
@@ -11,31 +11,31 @@ tasks:
   container-run:
     desc: Run application in the docker or podman container. It will also start up the database.
     deps: [database-up]
-    dir: '{{.USER_WORKING_DIR}}/containers'
+    dir: "{{.USER_WORKING_DIR}}/containers"
     aliases: [crun]
     cmd: bash -c "$RUNNER-compose -f service.yml up -d --no-deps --build"
 
   container-stop:
     desc: Stop docker or podman container with running application.
-    dir: '{{.USER_WORKING_DIR}}/containers'
+    dir: "{{.USER_WORKING_DIR}}/containers"
     aliases: [cstop]
     cmd: bash -c "$RUNNER-compose -f service.yml down"
 
   database-up:
     desc: Create the database container throw docker or podman.
-    dir: '{{.USER_WORKING_DIR}}/containers'
+    dir: "{{.USER_WORKING_DIR}}/containers"
     aliases: [db]
     cmd: bash -c "$RUNNER-compose -f database.yml up -d"
 
   database-down:
     desc: Drop the database container throw docker or podman.
-    dir: '{{.USER_WORKING_DIR}}/containers'
+    dir: "{{.USER_WORKING_DIR}}/containers"
     aliases: [dbd]
     cmd: bash -c "$RUNNER-compose -f database.yml down"
 
   migrate:
     desc: Migrate database. Will execute `database-up` task automatically.
-    dir: '{{.USER_WORKING_DIR}}'
+    dir: "{{.USER_WORKING_DIR}}"
     aliases: [mg]
     deps: [database-up]
     env:
@@ -47,13 +47,13 @@ tasks:
 
   lint:
     desc: Runs clippy
-    cmd: cargo clippy
+    cmd: cargo clippy --all-features --all-targets
 
   lint-fix:
     desc: Runs clippy
     aliases: [lf]
-    cmds: 
-      - cargo clippy --fix
+    cmds:
+      - cargo clippy --all-features --all-targets --fix
       - cd migration && cargo clippy --fix
 
   format:
@@ -71,5 +71,5 @@ tasks:
   test:
     desc: Run tests.
     cmds:
-      - cargo install cargo-maelstrom 
+      - cargo install cargo-maelstrom
       - cargo maelstrom

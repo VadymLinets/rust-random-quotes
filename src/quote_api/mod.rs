@@ -109,7 +109,7 @@ mod tests {
         };
 
         let res = service.get_random_quote().await;
-        assert!(!res.is_err(), "err = {}", res.err().unwrap());
+        assert!(res.is_ok());
         assert_eq!(res.unwrap(), structs::to_database(quote));
         mock.assert_async().await;
     }
