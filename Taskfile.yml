@@ -25,7 +25,10 @@ tasks:
     desc: Create the database container throw docker or podman.
     dir: "{{.USER_WORKING_DIR}}/containers"
     aliases: [db]
-    cmd: bash -c "$RUNNER-compose -f database.yml up -d"
+    cmds:
+      - bash -c "$RUNNER-compose -f database.yml up -d"
+      - sleep 2
+      - task: migrate
 
   database-down:
     desc: Drop the database container throw docker or podman.
@@ -34,10 +37,9 @@ tasks:
     cmd: bash -c "$RUNNER-compose -f database.yml down"
 
   migrate:
-    desc: Migrate database. Will execute `database-up` task automatically.
+    desc: Migrate database.
     dir: "{{.USER_WORKING_DIR}}"
     aliases: [mg]
-    deps: [database-up]
     env:
       POSTGRES_URL: postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_ADDR}}/{{.POSTGRES_DB}}
     cmds:

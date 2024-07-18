@@ -1,16 +1,21 @@
 use anyhow::{Context, Result};
+use juniper::EmptySubscription;
+use juniper_rocket::{GraphQLRequest, GraphQLResponse};
 use rocket::http::{Method, Status};
-use rocket::response::{content, status};
-use rocket::{catch, catchers, get, patch, routes, Build, Request, Rocket, State};
+use rocket::response::status;
+use rocket::{catch, catchers, get, patch, post, routes, Build, Request, Rocket, State};
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use std::collections::HashSet;
+use rocket::serde::json::Json;
 
 use crate::heartbeat::Heartbeat;
+use crate::quote::structs::Quote;
 use crate::quote::Service;
+use super::graphql::quotes_resolver::{Context as graphql_context, Mutation, Query, Schema};
 
 pub fn register_routes(
     builder: Rocket<Build>,
-    h: Heartbeat,
+    heartbeat: Heartbeat,
     quotes: Service,
 ) -> Result<Rocket<Build>> {
     let cors = rocket_cors::CorsOptions {
@@ -29,13 +34,16 @@ pub fn register_routes(
 
     Ok(builder
         .attach(cors)
-        .manage(h)
+        .manage(heartbeat)
         .manage(quotes)
+        .manage(Schema::new(Query, Mutation, EmptySubscription::new()))
         .register("/", catchers![catch_default])
         .mount("/heartbeat", routes![heartbeat_handler])
         .mount("/", routes![get_quote_handler])
         .mount("/", routes![like_quote_handler])
-        .mount("/", routes![get_same_quote_handler]))
+        .mount("/", routes![get_same_quote_handler])
+        .mount("/", routes![get_graphql])
+        .mount("/", routes![post_graphql]))
 }
 
 #[catch(default)]
@@ -44,8 +52,8 @@ fn catch_default(status: Status, req: &Request) -> String {
 }
 
 #[get("/")]
-async fn heartbeat_handler(h: &State<Heartbeat>) -> Status {
-    match h.ping_database().await {
+async fn heartbeat_handler(heartbeat: &State<Heartbeat>) -> Status {
+    match heartbeat.ping_database().await {
         Ok(_) => Status::Ok,
         Err(err) => {
             log::error!("failed to ping database: {err}");
@@ -58,15 +66,9 @@ async fn heartbeat_handler(h: &State<Heartbeat>) -> Status {
 async fn get_quote_handler(
     user_id: String,
     quotes: &State<Service>,
-) -> status::Custom<Option<content::RawJson<String>>> {
+) -> status::Custom<Option<Json<Quote>>> {
     match quotes.get_quote(&user_id).await {
-        Ok(quote) => match serde_json::to_string(&quote) {
-            Ok(value) => status::Custom(Status::Ok, Some(content::RawJson(value))),
-            Err(err) => {
-                log::error!("failed to serialize quote: {err}");
-                status::Custom(Status::InternalServerError, None)
-            }
-        },
+        Ok(quote) => status::Custom(Status::Ok, Some(Json(quote))),
         Err(err) => {
             log::error!("failed to get quote: {err}");
             status::Custom(Status::InternalServerError, None)
@@ -90,18 +92,48 @@ async fn get_same_quote_handler(
     quote_id: String,
     user_id: String,
     quotes: &State<Service>,
-) -> status::Custom<Option<content::RawJson<String>>> {
+) -> status::Custom<Option<Json<Quote>>> {
     match quotes.get_same_quote(&user_id, &quote_id).await {
-        Ok(quote) => match serde_json::to_string(&quote) {
-            Ok(value) => status::Custom(Status::Ok, Some(content::RawJson(value))),
-            Err(err) => {
-                log::error!("failed to serialize quote: {err}");
-                status::Custom(Status::InternalServerError, None)
-            }
-        },
+        Ok(quote) => status::Custom(Status::Ok, Some(Json(quote))),
         Err(err) => {
             log::error!("failed to get same quote: {err}");
             status::Custom(Status::InternalServerError, None)
         }
     }
+}
+
+#[get("/graphql?<request..>")]
+async fn get_graphql<'a>(
+    quotes: &State<Service>,
+    heartbeat: &State<Heartbeat>,
+    request: GraphQLRequest,
+    schema: &State<Schema>,
+) -> GraphQLResponse {
+    request
+        .execute(
+            schema,
+            &graphql_context {
+                quotes: quotes.inner().clone(),
+                heartbeat: heartbeat.inner().clone(),
+            },
+        )
+        .await
+}
+
+#[post("/graphql", data = "<request>")]
+async fn post_graphql<'a>(
+    quotes: &State<Service>,
+    heartbeat: &State<Heartbeat>,
+    request: GraphQLRequest,
+    schema: &State<Schema>,
+) -> GraphQLResponse {
+    request
+        .execute(
+            schema,
+            &graphql_context {
+                quotes: quotes.inner().clone(),
+                heartbeat: heartbeat.inner().clone(),
+            },
+        )
+        .await
 }

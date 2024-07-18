@@ -1,11 +1,14 @@
-use actix_web::{get, patch, web, HttpResponse, Responder};
+use actix_web::web::Data;
+use actix_web::{get, patch, web, HttpRequest, HttpResponse, Responder, Error};
+use juniper_actix::graphql_handler;
 
-use crate::actix_server::structs;
 use crate::heartbeat::Heartbeat;
 use crate::quote::Service;
+use crate::server::structs;
+use super::graphql::quotes_resolver::{Context as graphql_context, Schema};
 
 #[get("/heartbeat")]
-async fn heartbeat_handler(heartbeat: web::Data<Heartbeat>) -> impl Responder {
+async fn heartbeat_handler(heartbeat: Data<Heartbeat>) -> impl Responder {
     match heartbeat.ping_database().await {
         Ok(_) => HttpResponse::Ok(),
         Err(err) => {
@@ -18,16 +21,10 @@ async fn heartbeat_handler(heartbeat: web::Data<Heartbeat>) -> impl Responder {
 #[get("/")]
 async fn get_quote_handler(
     query: web::Query<structs::UserID>,
-    quotes: web::Data<Service>,
+    quotes: Data<Service>,
 ) -> impl Responder {
     match quotes.get_quote(&query.user_id).await {
-        Ok(quote) => match serde_json::to_string(&quote) {
-            Ok(value) => HttpResponse::Ok().body(value),
-            Err(err) => {
-                log::error!("failed to serialize quote: {err}");
-                HttpResponse::InternalServerError().finish()
-            }
-        },
+        Ok(quote) => HttpResponse::Ok().json(quote),
         Err(err) => {
             log::error!("failed to get quote: {err}");
             HttpResponse::InternalServerError().finish()
@@ -38,7 +35,7 @@ async fn get_quote_handler(
 #[patch("/like")]
 async fn like_quote_handler(
     query: web::Query<structs::UserAndQuoteID>,
-    quotes: web::Data<Service>,
+    quotes: Data<Service>,
 ) -> impl Responder {
     match quotes.like_quote(&query.user_id, &query.quote_id).await {
         Ok(_) => HttpResponse::Ok(),
@@ -52,19 +49,32 @@ async fn like_quote_handler(
 #[get("/same")]
 async fn get_same_quote_handler(
     query: web::Query<structs::UserAndQuoteID>,
-    quotes: web::Data<Service>,
+    quotes: Data<Service>,
 ) -> impl Responder {
     match quotes.get_same_quote(&query.user_id, &query.quote_id).await {
-        Ok(quote) => match serde_json::to_string(&quote) {
-            Ok(value) => HttpResponse::Ok().body(value),
-            Err(err) => {
-                log::error!("failed to serialize quote: {err}");
-                HttpResponse::InternalServerError().finish()
-            }
-        },
+        Ok(quote) => HttpResponse::Ok().json(quote),
         Err(err) => {
             log::error!("failed to get same quote: {err}");
             HttpResponse::InternalServerError().finish()
         }
     }
+}
+
+pub async fn graphql(
+    req: HttpRequest,
+    payload: web::Payload,
+    schema: Data<Schema>,
+    quotes: Data<Service>,
+    heartbeat: Data<Heartbeat>,
+) -> Result<HttpResponse, Error> {
+    graphql_handler(
+        &schema,
+        &graphql_context {
+            quotes: quotes.get_ref().clone(),
+            heartbeat: heartbeat.get_ref().clone(),
+        },
+        req,
+        payload,
+    )
+    .await
 }

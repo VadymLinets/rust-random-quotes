@@ -35,10 +35,11 @@ pub trait Api {
     async fn get_random_quote(&self) -> Result<Quotes>;
 }
 
+#[derive(Clone)]
 pub struct Service {
     cfg: QuotesConfig,
     db: Arc<dyn Database + Send + Sync>,
-    api: Box<dyn Api + Send + Sync>,
+    api: Arc<dyn Api + Send + Sync>,
 }
 
 impl Service {
@@ -106,7 +107,7 @@ impl Service {
         };
 
         self.db
-            .mark_as_viewed(user_id, quote_id)
+            .mark_as_viewed(user_id, quote.id.as_str())
             .await
             .context("failed to mark as viewed")?;
 
@@ -116,7 +117,7 @@ impl Service {
     pub fn new(
         cfg: &QuotesConfig,
         db: Arc<dyn Database + Send + Sync>,
-        api: Box<dyn Api + Send + Sync>,
+        api: Arc<dyn Api + Send + Sync>,
     ) -> Self {
         Service {
             cfg: cfg.to_owned(),
@@ -354,6 +355,6 @@ mod tests {
     }
 
     fn new_service(cfg: QuotesConfig, mocks: (MockDatabase, MockApi)) -> Service {
-        Service::new(&cfg, Arc::new(mocks.0), Box::new(mocks.1))
+        Service::new(&cfg, Arc::new(mocks.0), Arc::new(mocks.1))
     }
 }

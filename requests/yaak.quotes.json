@@ -1,0 +1,323 @@
+{
+  "yaakVersion": "2024.6.6",
+  "yaakSchema": 2,
+  "timestamp": "2024-07-14T11:13:19.794555739",
+  "resources": {
+    "workspaces": [
+      {
+        "id": "wk_yxwTAXxlR9",
+        "model": "workspace",
+        "createdAt": "2024-07-03T15:36:25",
+        "updatedAt": "2024-07-03T15:36:25",
+        "name": "Quotes",
+        "description": "",
+        "variables": [],
+        "settingValidateCertificates": true,
+        "settingFollowRedirects": true,
+        "settingRequestTimeout": 0
+      }
+    ],
+    "environments": [
+      {
+        "id": "ev_OnqintTBsB",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "model": "workspace",
+        "createdAt": "2024-07-14T11:10:30",
+        "updatedAt": "2024-07-14T11:10:47",
+        "name": "Local",
+        "variables": [
+          {
+            "enabled": true,
+            "name": "addr",
+            "value": "http://localhost:1140"
+          },
+          {
+            "enabled": true,
+            "name": "",
+            "value": ""
+          }
+        ]
+      }
+    ],
+    "folders": [
+      {
+        "createdAt": "2024-07-14T11:08:45",
+        "updatedAt": "2024-07-14T11:08:49",
+        "id": "fl_t4nt0yW2QQ",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": null,
+        "model": "folder",
+        "name": "REST",
+        "sortPriority": 1000.0
+      },
+      {
+        "createdAt": "2024-07-14T11:09:12",
+        "updatedAt": "2024-07-14T11:09:23",
+        "id": "fl_nAdgWCXUib",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": null,
+        "model": "folder",
+        "name": "GRPC",
+        "sortPriority": 2500.0
+      },
+      {
+        "createdAt": "2024-07-14T11:10:00",
+        "updatedAt": "2024-07-14T11:10:08",
+        "id": "fl_KxjGUDaGmn",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": null,
+        "model": "folder",
+        "name": "GraphQL",
+        "sortPriority": 5250.0
+      }
+    ],
+    "httpRequests": [
+      {
+        "createdAt": "2024-07-03T15:36:25",
+        "updatedAt": "2024-07-14T11:11:13",
+        "id": "rq_COewOhDgc6",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": "fl_t4nt0yW2QQ",
+        "model": "http_request",
+        "sortPriority": 0.0,
+        "name": "Heartbeat",
+        "url": "${[ addr ]}/heartbeat",
+        "urlParameters": [],
+        "method": "GET",
+        "body": {},
+        "bodyType": null,
+        "authentication": {},
+        "authenticationType": null,
+        "headers": []
+      },
+      {
+        "createdAt": "2024-07-03T15:36:25",
+        "updatedAt": "2024-07-14T11:11:05",
+        "id": "rq_17hY3aNV1y",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": "fl_t4nt0yW2QQ",
+        "model": "http_request",
+        "sortPriority": 1000.0,
+        "name": "Get random quote",
+        "url": "${[ addr ]}/?user_id=1",
+        "urlParameters": [],
+        "method": "GET",
+        "body": {},
+        "bodyType": null,
+        "authentication": {},
+        "authenticationType": null,
+        "headers": []
+      },
+      {
+        "createdAt": "2024-07-03T15:36:25",
+        "updatedAt": "2024-07-14T11:11:25",
+        "id": "rq_ZlSXNuel6L",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": "fl_t4nt0yW2QQ",
+        "model": "http_request",
+        "sortPriority": 2000.0,
+        "name": "Like quote",
+        "url": "${[ addr ]}/like?user_id=1&quote_id=mT4iARsFw",
+        "urlParameters": [],
+        "method": "PATCH",
+        "body": {},
+        "bodyType": null,
+        "authentication": {},
+        "authenticationType": null,
+        "headers": []
+      },
+      {
+        "createdAt": "2024-07-03T15:36:25",
+        "updatedAt": "2024-07-14T11:11:58",
+        "id": "rq_08SNYw6kED",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": "fl_t4nt0yW2QQ",
+        "model": "http_request",
+        "sortPriority": 3000.0,
+        "name": "Get same quote",
+        "url": "${[ addr ]}/same?user_id=2&quote_id=mT4iARsFw",
+        "urlParameters": [],
+        "method": "GET",
+        "body": {},
+        "bodyType": null,
+        "authentication": {},
+        "authenticationType": null,
+        "headers": []
+      },
+      {
+        "createdAt": "2024-07-11T14:52:53",
+        "updatedAt": "2024-07-14T11:12:22",
+        "id": "rq_TIb9IHjeqn",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": "fl_KxjGUDaGmn",
+        "model": "http_request",
+        "sortPriority": 0.0,
+        "name": "Heartbeat",
+        "url": "${[ addr ]}/graphql",
+        "urlParameters": [],
+        "method": "POST",
+        "body": {
+          "text": "{\n  \"query\": \"query Heartbeat {\\n  heartbeat {\\n    success\\n    errors\\n  }\\n}\"\n}"
+        },
+        "bodyType": "graphql",
+        "authentication": {},
+        "authenticationType": null,
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      },
+      {
+        "createdAt": "2024-07-11T15:09:36",
+        "updatedAt": "2024-07-14T11:12:26",
+        "id": "rq_shLvsWBO7k",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": "fl_KxjGUDaGmn",
+        "model": "http_request",
+        "sortPriority": 1000.0,
+        "name": "Get random quote",
+        "url": "${[ addr ]}/graphql",
+        "urlParameters": [],
+        "method": "POST",
+        "body": {
+          "text": "{\n  \"query\": \"query GetRandomQuote {\\n  get_quote_handler(user_id: \\\"1\\\") {\\n    success\\n    errors\\n    quote {\\n      id\\n      quote\\n      author\\n      tags\\n      likes\\n    }\\n  }\\n}\\n\"\n}"
+        },
+        "bodyType": "graphql",
+        "authentication": {},
+        "authenticationType": null,
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      },
+      {
+        "createdAt": "2024-07-11T15:12:02",
+        "updatedAt": "2024-07-14T11:12:30",
+        "id": "rq_9y9MdtIvtU",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": "fl_KxjGUDaGmn",
+        "model": "http_request",
+        "sortPriority": 2000.0,
+        "name": "Like quote",
+        "url": "${[ addr ]}/graphql",
+        "urlParameters": [],
+        "method": "POST",
+        "body": {
+          "text": "{\n  \"query\": \"mutation LikeQuote {\\n  like_quote_handler(user_id: \\\"1\\\", quote_id: \\\"Ilvlt1O0thk7\\\") {\\n    success\\n    errors\\n  }\\n}\"\n}"
+        },
+        "bodyType": "graphql",
+        "authentication": {},
+        "authenticationType": null,
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      },
+      {
+        "createdAt": "2024-07-11T15:13:21",
+        "updatedAt": "2024-07-14T11:12:35",
+        "id": "rq_eIUcrHROpE",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "folderId": "fl_KxjGUDaGmn",
+        "model": "http_request",
+        "sortPriority": 3000.0,
+        "name": "Get same quote",
+        "url": "${[ addr ]}/graphql",
+        "urlParameters": [],
+        "method": "POST",
+        "body": {
+          "text": "{\n  \"query\": \"query GetSameQuote {\\n  get_same_quote_handler(user_id: \\\"1\\\", quote_id: \\\"Ilvlt1O0thk7\\\") {\\n    success\\n    errors\\n    quote {\\n      id\\n      quote\\n      author\\n      tags\\n      likes\\n    }\\n  }\\n}\"\n}"
+        },
+        "bodyType": "graphql",
+        "authentication": {},
+        "authenticationType": null,
+        "headers": [
+          {
+            "enabled": true,
+            "name": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    ],
+    "grpcRequests": [
+      {
+        "id": "gr_fIY2sHGNZ1",
+        "model": "grpc_request",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "createdAt": "2024-07-11T11:28:46.477",
+        "updatedAt": "2024-07-14T11:09:34",
+        "folderId": "fl_nAdgWCXUib",
+        "name": "Get random quote",
+        "sortPriority": 1000.0,
+        "url": "localhost:1140",
+        "service": "Quotes",
+        "method": "GetQuoteHandler",
+        "message": "{\n  \"user_id\": \"1\"\n}",
+        "authenticationType": null,
+        "authentication": {},
+        "metadata": []
+      },
+      {
+        "id": "gr_ho0vN3DpFZ",
+        "model": "grpc_request",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "createdAt": "2024-07-11T12:22:38.627",
+        "updatedAt": "2024-07-14T11:09:34",
+        "folderId": "fl_nAdgWCXUib",
+        "name": "Get same quote",
+        "sortPriority": 3000.0,
+        "url": "localhost:1140",
+        "service": "Quotes",
+        "method": "GetSameQuoteHandler",
+        "message": "{\n  \"quote_id\": \"l0LfTgApB3\",\n  \"user_id\": \"1\"\n}",
+        "authenticationType": null,
+        "authentication": {},
+        "metadata": []
+      },
+      {
+        "id": "gr_blleGYfJVY",
+        "model": "grpc_request",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "createdAt": "2024-07-11T12:25:57.484",
+        "updatedAt": "2024-07-14T11:09:34",
+        "folderId": "fl_nAdgWCXUib",
+        "name": "Like quote",
+        "sortPriority": 2000.0,
+        "url": "localhost:1140",
+        "service": "Quotes",
+        "method": "LikeQuoteHandler",
+        "message": "{\n  \"quote_id\": \"l0LfTgApB3\",\n  \"user_id\": \"1\"\n}",
+        "authenticationType": null,
+        "authentication": {},
+        "metadata": []
+      },
+      {
+        "id": "gr_TCAQav7pAo",
+        "model": "grpc_request",
+        "workspaceId": "wk_yxwTAXxlR9",
+        "createdAt": "2024-07-11T14:31:06.552",
+        "updatedAt": "2024-07-14T11:09:34",
+        "folderId": "fl_nAdgWCXUib",
+        "name": "Heartbeat",
+        "sortPriority": 0.0,
+        "url": "localhost:1140",
+        "service": "Quotes",
+        "method": "Heartbeat",
+        "message": "{}",
+        "authenticationType": null,
+        "authentication": {},
+        "metadata": []
+      }
+    ]
+  }
+}

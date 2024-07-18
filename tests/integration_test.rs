@@ -47,7 +47,7 @@ async fn test_integration() {
     let cfg = tools.get_config();
 
     let server = tokio::spawn(enclose! {(cfg) async move { quotes_rs::start(cfg).await }});
-    sleep_until(Instant::now() + Duration::from_secs(2)).await;
+    sleep_until(Instant::now() + Duration::from_secs(2)).await; // wait until the server is ready
 
     let user_id: String = uuid::UUIDv4.fake();
 

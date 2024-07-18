@@ -7,6 +7,7 @@ pub trait Database {
     async fn ping(&self) -> Result<()>;
 }
 
+#[derive(Clone)]
 pub struct Heartbeat {
     db: Arc<dyn Database + Send + Sync>,
 }

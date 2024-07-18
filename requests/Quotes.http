@@ -1,0 +1,108 @@
+# Quotes
+
+###
+# @name Heartbeat
+GET http://0.0.0.0:1140/heartbeat
+
+###
+# @name Get random quote
+GET http://0.0.0.0:1140/?
+    user_id=1
+
+###
+# @name Like quote
+PATCH http://0.0.0.0:1140/like?
+    user_id=1&
+    quote_id=-LwlAMmYmOG
+
+###
+# @name Get same quote
+GET http://0.0.0.0:1140/same?
+    user_id=1&
+    quote_id=YJVGmtWg9t
+
+#! --------------------------------------------------------------------------
+
+### Heartbeat
+GRAPHQL localhost:1140/graphql
+
+query Heartbeat {
+    heartbeat {
+        success
+        errors
+    }
+}
+
+### Get random quote
+GRAPHQL localhost:1140/graphql
+
+query GetRandomQuote {
+    get_quote_handler(user_id: "1") {
+        success
+        errors
+        quote {
+            id
+            quote
+            author
+            tags
+            likes
+        }
+    }
+}
+
+### Like quote
+GRAPHQL localhost:1140/graphql
+
+mutation LikeQuote {
+    like_quote_handler(user_id: "1", quote_id: "Ilvlt1O0thk7") {
+        success
+        errors
+    }
+}
+
+### Get same quote
+GRAPHQL localhost:1140/graphql
+
+query GetSameQuote {
+    get_same_quote_handler(user_id: "1", quote_id: "Ilvlt1O0thk7") {
+        success
+        errors
+        quote {
+            id
+            quote
+            author
+            tags
+            likes
+        }
+    }
+}
+
+#! --------------------------------------------------------------------------
+
+### Heartbeat
+GRPC localhost:1140/Quotes/Heartbeat
+
+{}
+
+### Get random quote
+GRPC localhost:1140/Quotes/GetQuoteHandler
+
+{
+  "user_id": "1"
+}
+
+### Like quote
+GRPC localhost:1140/Quotes/LikeQuoteHandler
+
+{
+  "quote_id": "UQ2TjZ5IIDSR",
+  "user_id": "1"
+}
+
+### Get same quote
+GRPC localhost:1140/Quotes/GetSameQuoteHandler
+
+{
+  "quote_id": "UQ2TjZ5IIDSR",
+  "user_id": "1"
+}
