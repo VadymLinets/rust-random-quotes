@@ -1,0 +1,95 @@
+Heartbeat: {
+  shape: sequence_diagram
+
+  user: User
+  server: Server
+  heartbeat_service: Heartbeat Service
+  repository: Repository
+
+  user -> server: Is server working normally?
+  server -> heartbeat_service: Ping database
+  heartbeat_service -> repository: Ping database
+  repository -> heartbeat_service: Database working as expected
+  heartbeat_service -> server: Database working as expected
+  server -> user: Everything working fine
+}
+
+Get quote: {
+  shape: sequence_diagram
+
+  user: User
+  server: Server
+  quotes_service: Quotes Service
+  quotes_api_service: Quotes Api Service
+  repository: Repository
+
+  user -> server: Get quote
+  server -> quotes_service: Get quote
+  quotes_service -> repository: Get list of unwatched quotes
+  repository -> quotes_service: Return list of unwatched quotes
+  quotes_service -> quotes_service: Choose quote randomly
+
+  List of unviewed quotes is not empty and choosed quote from list: {
+    quotes_service -> quotes_service: Return one of the quotes from list
+  }
+
+  List of unviewed quotes is empty or choosed new quote: {
+    quotes_service -> quotes_api_service: Get new quote from api
+    quotes_api_service -> repository: Save new quote
+    quotes_api_service -> quotes_service: Return new quote
+    quotes_service -> quotes_service: Return new quote
+  }
+
+  quotes_service -> repository: Mark quote as viewed
+  quotes_service -> server: Return quote
+  server -> user: Return quote
+}
+
+Like quote: {
+  shape: sequence_diagram
+
+  user: User
+  server: Server
+  quotes_service: Quotes Service
+  repository: Repository
+
+  user -> server: Like quote
+  server -> quotes_service: Like quote
+  quotes_service -> repository: Get view of quote
+  repository -> quotes_service: Return view of quote
+
+  Quote is not liked: {
+    quotes_service -> repository: Like quote
+    quotes_service -> repository: Mark quote as liked
+  }
+
+  quotes_service -> server: Quote liked
+  server -> user: Quote liked
+}
+
+Get same quote: {
+  shape: sequence_diagram
+
+  user: User
+  server: Server
+  quotes_service: Quotes Service
+  quotes_api_service: Quotes Api Service
+  repository: Repository
+
+  user -> server: Get same quote
+  server -> quotes_service: Get same quote
+  quotes_service -> repository: Get viewed quote
+  repository -> quotes_service: Return viewed quote
+  quotes_service -> repository: Get same quote
+  repository -> quotes_service: Return same quote
+
+  There is no same quote: {
+    quotes_service -> quotes_api_service: Get new quote from api
+    quotes_api_service -> repository: Save new quote
+    quotes_api_service -> quotes_service: Return new quote
+  }
+
+  quotes_service -> repository: Mark quote as viewed
+  quotes_service -> server: Return same quote
+  server -> user: Return same quote
+}

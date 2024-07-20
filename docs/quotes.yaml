@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: Quotes service
+  description: |
+    It's a service that shows random quotes, allows to like them and show quote
+    that is pretty similar to a specified one
+  version: 1.0.0
+servers:
+  - url: 'http://0.0.0.0:1140'
+paths:
+  /:
+    get:
+      description: Get random quote
+      parameters:
+        - name: user_id
+          in: query
+          description: ID of the user that want to get quote
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            Gets unseen quote randomly or gets new quote from external site api
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        500:
+          description: Failed to get random quote
+          content: {}
+  /heartbeat:
+    get:
+      description: Check if server and database working normally
+      responses:
+        200:
+          description: Everything is ok
+          content: {}
+        500:
+          description: Database is not working
+          content: {}
+  /same:
+    get:
+      description: Get same quote
+      parameters:
+        - name: user_id
+          in: query
+          description: ID of the user that want to get same quote
+          required: true
+          schema:
+            type: string
+        - name: quote_id
+          in: query
+          description: ID of the quote same of what we want to get
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Return quote that is pretty similar to a specified one
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        500:
+          description: Failed to get same quote
+          content: {}
+  /like:
+    patch:
+      description: Like viewed quote
+      parameters:
+        - name: user_id
+          in: query
+          description: ID of the user that want to like quote
+          required: true
+          schema:
+            type: string
+        - name: quote_id
+          in: query
+          description: ID of the quote that we want like
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content: {}
+      responses:
+        200:
+          description: Quote successfully liked
+          content: {}
+        500:
+          description: Failed to like quote
+          content: {}
+components:
+  schemas:
+    Quote:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the quote
+        quote:
+          type: string
+          description: The quote itself
+        author:
+          type: string
+          description: The author of the quote
+        tags:
+          type: array
+          items:
+            type: string
+          description: The tags associated with the quote
+        likes:
+          type: integer
+          format: int64
+          description: The number of likes for the quote

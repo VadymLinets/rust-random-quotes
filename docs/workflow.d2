@@ -1,0 +1,67 @@
+users: {
+  shape: person
+  style.multiple: true
+}
+
+database: Postgres {
+  shape: cylinder
+  style.multiple: true
+}
+
+random_quotes: Random Quotes Site {
+  shape: cloud
+  link: https://api.quotable.io/random
+}
+
+app: {
+  servers: {
+    actix: {
+      http
+      graphql
+    }
+
+    rocket: {
+      http
+      graphql
+    }
+
+    grpc: {}
+  }
+
+  services: {
+    heartbeat_service: Heartbeat Service {}
+    quotes_service: Quotes Service {}
+    quotes_api_service: Quotes Api Service {}
+
+    quotes_service -> quotes_api_service
+  }
+
+  repository: {
+    seaorm: {}
+  }
+
+  servers.actix.http -> services.quotes_service
+  servers.actix.graphql -> services.quotes_service
+  servers.rocket.http -> services.quotes_service
+  servers.rocket.graphql -> services.quotes_service
+  servers.grpc -> services.quotes_service
+
+  servers.actix.http -> services.heartbeat_service
+  servers.actix.graphql -> services.heartbeat_service
+  servers.rocket.http -> services.heartbeat_service
+  servers.rocket.graphql -> services.heartbeat_service
+  servers.grpc -> services.heartbeat_service
+
+  services.quotes_service -> repository.seaorm
+  services.heartbeat_service -> repository.seaorm
+}
+
+users -> app.servers.actix.http
+users -> app.servers.actix.graphql
+users -> app.servers.rocket.http
+users -> app.servers.rocket.graphql
+users -> app.servers.grpc
+
+app.repository.seaorm -> database
+
+app.services.quotes_api_service -> random_quotes
