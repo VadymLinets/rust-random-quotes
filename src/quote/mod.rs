@@ -156,72 +156,66 @@ impl Service {
 
 #[cfg(test)]
 mod tests {
-    use enclose::enclose;
+    use mockall::predicate::*;
+    use std::sync::LazyLock;
     use fake::{
         faker::{lorem, name},
         uuid, Fake, Faker,
     };
-    use mockall::predicate::*;
 
     use crate::database::structs::quotes::Model as quote_model;
     use crate::database::structs::views::Model as view_model;
-
     use super::*;
+
+    static USER_ID: LazyLock<String> = LazyLock::new(|| uuid::UUIDv4.fake());
+    static QUOTE_ID: LazyLock<String> = LazyLock::new(|| uuid::UUIDv4.fake());
+    static QUOTE: LazyLock<quote_model> = LazyLock::new(|| quote_model {
+        id: QUOTE_ID.clone(),
+        quote: lorem::en::Sentence(5..10).fake(),
+        author: name::en::Name().fake(),
+        likes: Faker.fake(),
+        tags: Faker.fake(),
+    });
+    static VIEW: LazyLock<view_model> = LazyLock::new(|| view_model {
+        user_id: USER_ID.clone(),
+        quote_id: QUOTE_ID.clone(),
+        liked: true,
+    });
 
     #[tokio::test]
     async fn test_get_quote_success() {
-        let user_id: String = uuid::UUIDv4.fake();
-        let quote_id: String = uuid::UUIDv4.fake();
-        let quote: quote_model = quote_model {
-            id: quote_id.clone(),
-            quote: lorem::en::Sentence(5..10).fake(),
-            author: name::en::Name().fake(),
-            likes: Faker.fake(),
-            tags: Faker.fake(),
-        };
-
         let mut db = MockDatabase::new();
 
         db.expect_get_quotes()
-            .with(eq(user_id.clone()))
-            .returning(enclose! { (quote) move |_| Ok(vec![quote.clone()])});
+            .with(eq(USER_ID.clone()))
+            .returning(|_| Ok(vec![QUOTE.clone()]));
 
         db.expect_mark_as_viewed()
-            .with(eq(user_id.clone()), eq(quote_id))
+            .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))
             .returning(|_, _| Ok(()));
 
         let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
-        let res = service.get_quote(&user_id).await;
+        let res = service.get_quote(&USER_ID).await;
         assert!(res.is_ok());
-        assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
+        assert_eq!(res.unwrap(), from_database_quote_to_quote(QUOTE.clone()));
     }
 
     #[tokio::test]
     async fn test_get_quote_success_random() {
-        let user_id: String = uuid::UUIDv4.fake();
-        let quote_id: String = uuid::UUIDv4.fake();
-        let quote: quote_model = quote_model {
-            id: quote_id.clone(),
-            quote: lorem::en::Sentence(5..10).fake(),
-            author: name::en::Name().fake(),
-            likes: Faker.fake(),
-            tags: Faker.fake(),
-        };
-
         let mut db = MockDatabase::new();
 
         db.expect_get_quotes()
-            .with(eq(user_id.clone()))
-            .returning(enclose! { (quote) move |_| Ok(vec![quote.clone()])});
+            .with(eq(USER_ID.clone()))
+            .returning(|_| Ok(vec![QUOTE.clone()]));
 
         db.expect_mark_as_viewed()
-            .with(eq(user_id.clone()), eq(quote_id))
+            .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))
             .returning(|_, _| Ok(()));
 
         let mut api = MockApi::new();
 
         api.expect_get_random_quote()
-            .returning(enclose! { (quote) move || Ok(quote.clone())});
+            .returning(|| Ok(QUOTE.clone()));
 
         let service = new_service(
             QuotesConfig {
@@ -230,128 +224,92 @@ mod tests {
             (db, api),
         );
 
-        let res = service.get_quote(&user_id).await;
+        let res = service.get_quote(&USER_ID).await;
         assert!(res.is_ok());
-        assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
+        assert_eq!(res.unwrap(), from_database_quote_to_quote(QUOTE.clone()));
     }
 
     #[tokio::test]
     async fn test_like_quote_success() {
-        let user_id: String = uuid::UUIDv4.fake();
-        let quote_id: String = uuid::UUIDv4.fake();
-        let view = view_model {
-            user_id: user_id.clone(),
-            quote_id: quote_id.clone(),
-            liked: false,
-        };
-
         let mut db = MockDatabase::new();
 
         db.expect_get_view()
-            .with(eq(user_id.clone()), eq(quote_id.clone()))
-            .returning(move |_, _| Ok(view.clone()));
+            .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))
+            .returning(|_, _| Ok(VIEW.clone()));
 
         db.expect_like_quote()
-            .with(eq(quote_id.clone()))
+            .with(eq(QUOTE_ID.clone()))
             .returning(|_| Ok(()));
 
         db.expect_mark_as_liked()
-            .with(eq(user_id.clone()), eq(quote_id.clone()))
+            .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))
             .returning(|_, _| Ok(()));
 
         let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
-        let res = service.like_quote(&user_id, &quote_id).await;
+        let res = service.like_quote(&USER_ID, &QUOTE_ID).await;
         assert!(res.is_ok());
     }
 
     #[tokio::test]
     async fn test_like_quote_already_liked() {
-        let user_id: String = uuid::UUIDv4.fake();
-        let quote_id: String = uuid::UUIDv4.fake();
-        let view = view_model {
-            user_id: user_id.clone(),
-            quote_id: quote_id.clone(),
-            liked: true,
-        };
-
         let mut db = MockDatabase::new();
 
         db.expect_get_view()
-            .with(eq(user_id.clone()), eq(quote_id.clone()))
-            .returning(move |_, _| Ok(view.clone()));
+            .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))
+            .returning(|_, _| Ok(VIEW.clone()));
 
         let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
-        let res = service.like_quote(&user_id, &quote_id).await;
+        let res = service.like_quote(&USER_ID, &QUOTE_ID).await;
         assert!(res.is_ok());
     }
 
     #[tokio::test]
     async fn test_get_same_quote_success() {
-        let user_id: String = uuid::UUIDv4.fake();
-        let quote_id: String = uuid::UUIDv4.fake();
-        let quote: quote_model = quote_model {
-            id: quote_id.clone(),
-            quote: lorem::en::Sentence(5..10).fake(),
-            author: name::en::Name().fake(),
-            likes: Faker.fake(),
-            tags: Faker.fake(),
-        };
-
         let mut db = MockDatabase::new();
 
         db.expect_get_quote()
-            .with(eq(quote_id.clone()))
-            .returning(enclose! { (quote) move |_| Ok(quote.clone())});
+            .with(eq(QUOTE_ID.clone()))
+            .returning(|_| Ok(QUOTE.clone()));
 
         db.expect_get_same_quote()
-            .with(eq(user_id.clone()), eq(quote.clone()))
-            .returning(enclose! { (quote) move |_,_| Ok(quote.clone())});
+            .with(eq(USER_ID.clone()), eq(QUOTE.clone()))
+            .returning(|_,_| Ok(QUOTE.clone()));
 
         db.expect_mark_as_viewed()
-            .with(eq(user_id.clone()), eq(quote_id.clone()))
+            .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))
             .returning(|_, _| Ok(()));
 
         let service = new_service(QuotesConfig::default(), (db, MockApi::new()));
-        let res = service.get_same_quote(&user_id, &quote_id).await;
+        let res = service.get_same_quote(&USER_ID, &QUOTE_ID).await;
         assert!(res.is_ok());
-        assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
+        assert_eq!(res.unwrap(), from_database_quote_to_quote(QUOTE.clone()));
     }
 
     #[tokio::test]
     async fn test_get_same_quote_random() {
-        let user_id: String = uuid::UUIDv4.fake();
-        let quote_id: String = uuid::UUIDv4.fake();
-        let quote: quote_model = quote_model {
-            id: quote_id.clone(),
-            quote: lorem::en::Sentence(5..10).fake(),
-            author: name::en::Name().fake(),
-            likes: Faker.fake(),
-            tags: Faker.fake(),
-        };
-
         let mut db = MockDatabase::new();
 
         db.expect_get_quote()
-            .with(eq(quote_id.clone()))
-            .returning(enclose! { (quote) move |_| Ok(quote.clone())});
+            .with(eq(QUOTE_ID.clone()))
+            .returning(|_| Ok(QUOTE.clone()));
 
         db.expect_get_same_quote()
-            .with(eq(user_id.clone()), eq(quote.clone()))
+            .with(eq(USER_ID.clone()), eq(QUOTE.clone()))
             .returning(|_, _| Err(Errors::ErrNotFound.into()));
 
         db.expect_mark_as_viewed()
-            .with(eq(user_id.clone()), eq(quote_id.clone()))
+            .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))
             .returning(|_, _| Ok(()));
 
         let mut api = MockApi::new();
 
         api.expect_get_random_quote()
-            .returning(enclose! { (quote) move || Ok(quote.clone())});
+            .returning(|| Ok(QUOTE.clone()));
 
         let service = new_service(QuotesConfig::default(), (db, api));
-        let res = service.get_same_quote(&user_id, &quote_id).await;
+        let res = service.get_same_quote(&USER_ID, &QUOTE_ID).await;
         assert!(res.is_ok());
-        assert_eq!(res.unwrap(), structs::from_database_quote_to_quote(quote));
+        assert_eq!(res.unwrap(), from_database_quote_to_quote(QUOTE.clone()));
     }
 
     fn new_service(cfg: QuotesConfig, mocks: (MockDatabase, MockApi)) -> Service {
