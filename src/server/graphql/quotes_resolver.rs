@@ -1,8 +1,8 @@
 use juniper::{graphql_object, EmptySubscription, FieldResult, RootNode};
 
+use super::quotes::{EmptyResult, Quote, QuoteResult};
 use crate::heartbeat::Heartbeat as heartbeat_service;
 use crate::quote::Service as quote_service;
-use super::quotes::{EmptyResult, Quote, QuoteResult};
 
 pub struct Context {
     pub quotes: quote_service,

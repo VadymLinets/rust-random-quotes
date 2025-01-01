@@ -1,9 +1,9 @@
 use tonic::{Request, Response, Status};
 
-use crate::heartbeat::Heartbeat;
-use crate::quote::Service;
 use super::proto::quotes_server::Quotes;
 use super::proto::{Empty, Quote, UserAndQuoteIdRequest, UserIdRequest};
+use crate::heartbeat::Heartbeat;
+use crate::quote::Service;
 
 pub struct Grpc {
     heartbeat: Heartbeat,

@@ -3,15 +3,15 @@ use juniper::EmptySubscription;
 use juniper_rocket::{GraphQLRequest, GraphQLResponse};
 use rocket::http::{Method, Status};
 use rocket::response::status;
+use rocket::serde::json::Json;
 use rocket::{catch, catchers, get, patch, post, routes, Build, Request, Rocket, State};
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use std::collections::HashSet;
-use rocket::serde::json::Json;
 
+use super::graphql::quotes_resolver::{Context as graphql_context, Mutation, Query, Schema};
 use crate::heartbeat::Heartbeat;
 use crate::quote::structs::Quote;
 use crate::quote::Service;
-use super::graphql::quotes_resolver::{Context as graphql_context, Mutation, Query, Schema};
 
 pub fn register_routes(
     builder: Rocket<Build>,

@@ -74,12 +74,12 @@ impl SeaORM {
 
         let tags = format!(
             "cardinality(array(select unnest(quotes.tags) intersect select unnest(array['{}'])))",
-            viewed_quote.tags.join("', '")
+            viewed_quote.tags.clone().unwrap_or_default().join("', '")
         );
 
         let author = format!(
             "(case when quotes.author = '{}' then 1 else 2 end)",
-            viewed_quote.author
+            viewed_quote.author.clone().unwrap_or_default()
         );
 
         let quote = quotes::find()
@@ -130,7 +130,7 @@ impl SeaORM {
         let view = views_active_model {
             user_id: Set(user_id.to_owned()),
             quote_id: Set(quote_id.to_owned()),
-            liked: Set(false),
+            liked: Set(Some(false)),
         };
 
         views::insert(view)
@@ -149,7 +149,7 @@ impl SeaORM {
         let view = views_active_model {
             user_id: Set(user_id.to_owned()),
             quote_id: Set(quote_id.to_owned()),
-            liked: Set(true),
+            liked: Set(Some(true)),
         };
 
         view.update(&self.db).await?;
@@ -163,7 +163,14 @@ impl SeaORM {
             .context("failed to get old quote")?;
 
         let mut quote_active: quotes_active_model = quote.into();
-        quote_active.likes = Set(quote_active.likes.take().unwrap_or_default() + 1);
+        quote_active.likes = Set(Some(
+            quote_active
+                .likes
+                .take()
+                .unwrap_or_default()
+                .unwrap_or_default()
+                + 1,
+        ));
 
         quote_active
             .update(&self.db)

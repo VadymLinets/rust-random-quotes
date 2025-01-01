@@ -15,8 +15,8 @@ pub fn from_database_quote_to_quote(quote: Quotes) -> Quote {
     Quote {
         id: quote.id,
         quote: quote.quote,
-        author: quote.author,
-        tags: quote.tags,
-        likes: quote.likes,
+        author: quote.author.unwrap_or_default(),
+        tags: quote.tags.unwrap_or_default(),
+        likes: quote.likes.unwrap_or_default(),
     }
 }

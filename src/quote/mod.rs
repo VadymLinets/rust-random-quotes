@@ -49,7 +49,7 @@ impl Service {
             .await
             .context("failed to get view")?;
 
-        if view.liked {
+        if view.liked.unwrap_or(false) {
             return Ok(());
         }
 
@@ -111,7 +111,8 @@ impl Service {
             && !quotes.is_empty()
         {
             let likes_count = quotes.iter().fold(0.0, |acc, q| {
-                acc + if q.likes == 0 { 1.0 } else { q.likes as f64 }
+                let likes = q.likes.unwrap_or_default();
+                acc + if likes == 0 { 1.0 } else { likes as f64 }
             });
 
             let mut accumulator = 0.0;
@@ -119,7 +120,8 @@ impl Service {
                 / (ONE_HUNDRED_PERCENT - self.cfg.random_quote_chance);
 
             for q in quotes.iter() {
-                let likes = if q.likes == 0 { 1.0 } else { q.likes as f64 };
+                let likes = q.likes.unwrap_or_default();
+                let likes = if likes == 0 { 1.0 } else { likes as f64 };
                 let percent = likes / del * ONE_HUNDRED_PERCENT;
                 if percent + accumulator >= random_percent {
                     return Ok(q.clone());
@@ -159,7 +161,7 @@ mod tests {
     static VIEW: LazyLock<view_model> = LazyLock::new(|| view_model {
         user_id: USER_ID.clone(),
         quote_id: QUOTE_ID.clone(),
-        liked: true,
+        liked: Some(true),
     });
 
     #[tokio::test]

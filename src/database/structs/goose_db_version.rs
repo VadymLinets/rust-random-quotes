@@ -11,67 +11,56 @@ impl EntityName for Entity {
         Some("public")
     }
     fn table_name(&self) -> &str {
-        "views"
+        "goose_db_version"
     }
 }
 
 #[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Eq, Serialize, Deserialize)]
 pub struct Model {
-    pub user_id: String,
-    pub quote_id: String,
-    pub liked: Option<bool>,
+    pub id: i32,
+    pub version_id: i64,
+    pub is_applied: bool,
+    pub tstamp: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
 pub enum Column {
-    UserId,
-    QuoteId,
-    Liked,
+    Id,
+    VersionId,
+    IsApplied,
+    Tstamp,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
 pub enum PrimaryKey {
-    UserId,
-    QuoteId,
+    Id,
 }
 
 impl PrimaryKeyTrait for PrimaryKey {
-    type ValueType = (String, String);
+    type ValueType = i32;
     fn auto_increment() -> bool {
-        false
+        true
     }
 }
 
 #[derive(Copy, Clone, Debug, EnumIter)]
-pub enum Relation {
-    Quotes,
-}
+pub enum Relation {}
 
 impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::UserId => ColumnType::Text.def(),
-            Self::QuoteId => ColumnType::Text.def(),
-            Self::Liked => ColumnType::Boolean.def().null(),
+            Self::Id => ColumnType::Integer.def(),
+            Self::VersionId => ColumnType::BigInteger.def(),
+            Self::IsApplied => ColumnType::Boolean.def(),
+            Self::Tstamp => ColumnType::DateTime.def(),
         }
     }
 }
 
 impl RelationTrait for Relation {
     fn def(&self) -> RelationDef {
-        match self {
-            Self::Quotes => Entity::belongs_to(super::quotes::Entity)
-                .from(Column::QuoteId)
-                .to(super::quotes::Column::Id)
-                .into(),
-        }
-    }
-}
-
-impl Related<super::quotes::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Quotes.def()
+        panic!("No RelationDef")
     }
 }
 

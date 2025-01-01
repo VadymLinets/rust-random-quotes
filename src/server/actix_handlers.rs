@@ -1,11 +1,11 @@
 use actix_web::web::Data;
-use actix_web::{get, patch, web, HttpRequest, HttpResponse, Responder, Error};
+use actix_web::{get, patch, web, Error, HttpRequest, HttpResponse, Responder};
 use juniper_actix::graphql_handler;
 
+use super::graphql::quotes_resolver::{Context as graphql_context, Schema};
 use crate::heartbeat::Heartbeat;
 use crate::quote::Service;
 use crate::server::structs;
-use super::graphql::quotes_resolver::{Context as graphql_context, Schema};
 
 #[get("/heartbeat")]
 async fn heartbeat_handler(heartbeat: Data<Heartbeat>) -> impl Responder {

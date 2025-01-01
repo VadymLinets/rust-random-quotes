@@ -12,16 +12,16 @@ use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 use anyhow::{Context, Result};
 use env_logger::Env;
+use juniper::EmptySubscription;
 use proto::quotes_server::QuotesServer;
 use rocket::{build, Config};
 use std::net::SocketAddr;
-use juniper::EmptySubscription;
 
 use crate::config::ServerConfig;
 use crate::heartbeat::Heartbeat;
 use crate::quote::Service;
-use crate::server::grpc_handlers::Grpc;
 use crate::server::graphql::quotes_resolver::{Mutation, Query, Schema};
+use crate::server::grpc_handlers::Grpc;
 
 pub async fn start_rocket(cfg: &ServerConfig, heartbeat: Heartbeat, quotes: Service) -> Result<()> {
     let addr: SocketAddr = cfg.addr.parse().context("failed to parse address")?;

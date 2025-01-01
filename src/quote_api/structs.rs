@@ -15,8 +15,8 @@ pub fn to_database(quote: Quote) -> Quotes {
     Quotes {
         id: quote.id,
         quote: quote.content,
-        author: quote.author,
-        tags: quote.tags,
-        likes: 0,
+        author: Some(quote.author),
+        tags: Some(quote.tags),
+        likes: Some(0i32),
     }
 }

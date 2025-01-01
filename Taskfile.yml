@@ -60,7 +60,7 @@ tasks:
 
   format:
     desc: Auto formating rust code
-    aliases: [f, fmt]
+    aliases: [fmt]
     cmd: cargo fmt
 
   upgrade-libraries:

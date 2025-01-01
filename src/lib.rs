@@ -72,7 +72,7 @@ pub mod test_tools {
         pub fn get_same_quote(&self) -> quote_model {
             quote_model {
                 author: self.main_quote.author.clone(),
-                likes: 0,
+                likes: Some(0i32),
                 tags: self.main_quote.tags.clone(),
                 ..get_random_quote()
             }
@@ -130,7 +130,7 @@ pub mod test_tools {
             id: uuid::UUIDv4.fake(),
             quote: lorem::en::Sentence(5..10).fake(),
             author: name::en::Name().fake(),
-            likes: 0,
+            likes: Some(0i32),
             tags: Faker.fake(),
         }
     }
