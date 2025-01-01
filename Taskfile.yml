@@ -73,5 +73,6 @@ tasks:
   test:
     desc: Run tests.
     cmds:
-      - cargo install cargo-maelstrom
-      - cargo maelstrom
+      - cargo test
+      # - cargo install cargo-maelstrom
+      # - cargo maelstrom

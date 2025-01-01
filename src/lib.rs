@@ -129,9 +129,9 @@ pub mod test_tools {
         quote_model {
             id: uuid::UUIDv4.fake(),
             quote: lorem::en::Sentence(5..10).fake(),
-            author: name::en::Name().fake(),
+            author: Some(name::en::Name().fake()),
             likes: Some(0i32),
-            tags: Faker.fake(),
+            tags: Some(Faker.fake()),
         }
     }
 }
