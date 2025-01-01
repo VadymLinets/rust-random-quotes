@@ -1,39 +1,18 @@
 pub mod structs;
+pub mod traits;
 
 use anyhow::{Context, Result};
-use async_trait::async_trait;
 use rand::Rng;
 use std::sync::Arc;
 
 use crate::config::QuotesConfig;
-use crate::database::seaorm::Errors;
+use crate::database::seaorm;
 use crate::database::structs::quotes::Model as Quotes;
-use crate::database::structs::views::Model as Views;
 
 use structs::from_database_quote_to_quote;
-
-#[cfg(test)]
-use mockall::automock;
+pub use traits::{Api, Database};
 
 const ONE_HUNDRED_PERCENT: f64 = 100.0;
-
-#[cfg_attr(test, automock)]
-#[async_trait]
-pub trait Database {
-    async fn get_quote(&self, quote_id: &str) -> Result<Quotes>;
-    async fn get_quotes(&self, user_id: &str) -> Result<Vec<Quotes>>;
-    async fn get_same_quote(&self, user_id: &str, viewed_quote: &Quotes) -> Result<Quotes>;
-    async fn get_view(&self, user_id: &str, quote_id: &str) -> Result<Views>;
-    async fn mark_as_viewed(&self, user_id: &str, quote_id: &str) -> Result<()>;
-    async fn mark_as_liked(&self, user_id: &str, quote_id: &str) -> Result<()>;
-    async fn like_quote(&self, quote_id: &str) -> Result<()>;
-}
-
-#[cfg_attr(test, automock)]
-#[async_trait]
-pub trait Api {
-    async fn get_random_quote(&self) -> Result<Quotes>;
-}
 
 #[derive(Clone)]
 pub struct Service {
@@ -96,8 +75,8 @@ impl Service {
 
         let quote = match self.db.get_same_quote(user_id, &viewed_quote).await {
             Ok(quote) => quote,
-            Err(err) => match err.downcast_ref::<Errors>() {
-                Some(Errors::ErrNotFound) => self
+            Err(err) => match err.downcast_ref::<seaorm::Errors>() {
+                Some(seaorm::Errors::ErrNotFound) => self
                     .api
                     .get_random_quote()
                     .await
@@ -139,11 +118,11 @@ impl Service {
             let del = likes_count * ONE_HUNDRED_PERCENT
                 / (ONE_HUNDRED_PERCENT - self.cfg.random_quote_chance);
 
-            for (i, q) in quotes.iter().enumerate() {
+            for q in quotes.iter() {
                 let likes = if q.likes == 0 { 1.0 } else { q.likes as f64 };
                 let percent = likes / del * ONE_HUNDRED_PERCENT;
                 if percent + accumulator >= random_percent {
-                    return Ok(quotes[i].to_owned());
+                    return Ok(q.clone());
                 }
 
                 accumulator += percent
@@ -156,16 +135,17 @@ impl Service {
 
 #[cfg(test)]
 mod tests {
-    use mockall::predicate::*;
-    use std::sync::LazyLock;
     use fake::{
         faker::{lorem, name},
         uuid, Fake, Faker,
     };
+    use mockall::predicate::*;
+    use std::sync::LazyLock;
 
+    use super::*;
     use crate::database::structs::quotes::Model as quote_model;
     use crate::database::structs::views::Model as view_model;
-    use super::*;
+    use crate::quote::traits::{MockApi, MockDatabase};
 
     static USER_ID: LazyLock<String> = LazyLock::new(|| uuid::UUIDv4.fake());
     static QUOTE_ID: LazyLock<String> = LazyLock::new(|| uuid::UUIDv4.fake());
@@ -273,7 +253,7 @@ mod tests {
 
         db.expect_get_same_quote()
             .with(eq(USER_ID.clone()), eq(QUOTE.clone()))
-            .returning(|_,_| Ok(QUOTE.clone()));
+            .returning(|_, _| Ok(QUOTE.clone()));
 
         db.expect_mark_as_viewed()
             .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))
@@ -295,7 +275,7 @@ mod tests {
 
         db.expect_get_same_quote()
             .with(eq(USER_ID.clone()), eq(QUOTE.clone()))
-            .returning(|_, _| Err(Errors::ErrNotFound.into()));
+            .returning(|_, _| Err(seaorm::Errors::ErrNotFound.into()));
 
         db.expect_mark_as_viewed()
             .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))

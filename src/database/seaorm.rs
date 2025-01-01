@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use migration::{Migrator, MigratorTrait};
+use sea_orm::sea_query::SimpleExpr;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{sea_query, QueryOrder};
 use sea_orm::{
@@ -83,8 +84,8 @@ impl SeaORM {
 
         let quote = quotes::find()
             .filter(quotes_columns::Id.not_in_subquery(viewed.as_query().to_owned()))
-            .order_by_desc(migration::SimpleExpr::Custom(tags))
-            .order_by_asc(migration::SimpleExpr::Custom(author))
+            .order_by_desc(SimpleExpr::Custom(tags))
+            .order_by_asc(SimpleExpr::Custom(author))
             .order_by_desc(quotes_columns::Likes)
             .one(&self.db)
             .await?;
@@ -152,7 +153,6 @@ impl SeaORM {
         };
 
         view.update(&self.db).await?;
-
         Ok(())
     }
 

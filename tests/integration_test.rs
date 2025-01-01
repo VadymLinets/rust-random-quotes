@@ -1,11 +1,11 @@
 use enclose::enclose;
 use fake::{uuid, Fake};
 use std::{env, time::Duration};
-use testcontainers::{runners::AsyncRunner, RunnableImage};
+use testcontainers::{runners::AsyncRunner, ImageExt};
 use testcontainers_modules::postgres;
-use tokio::time::{sleep_until, Instant};
+use tokio::time::sleep;
 
-use quotes_rs::tools::Tools;
+use quotes_rs::test_tools::Tools;
 
 #[tokio::test]
 async fn test_integration() {
@@ -13,16 +13,14 @@ async fn test_integration() {
     let db_user = "postgres";
     let db_password = "postgres";
 
-    let db_container = RunnableImage::from(
-        postgres::Postgres::default()
-            .with_db_name(db_name)
-            .with_user(db_user)
-            .with_password(db_password),
-    )
-    .with_tag("latest")
-    .start()
-    .await
-    .expect("postgres is not started properly");
+    let db_container = postgres::Postgres::default()
+        .with_db_name(db_name)
+        .with_user(db_user)
+        .with_password(db_password)
+        .with_tag("latest")
+        .start()
+        .await
+        .expect("postgres is not started properly");
 
     let runs_in_container = env::var("RUNS_IN_CONTAINER")
         .ok()
@@ -47,7 +45,7 @@ async fn test_integration() {
     let cfg = tools.get_config();
 
     let server = tokio::spawn(enclose! {(cfg) async move { quotes_rs::start(cfg).await }});
-    sleep_until(Instant::now() + Duration::from_secs(2)).await; // wait until the server is ready
+    sleep(Duration::from_secs(2)).await; // wait until the server is ready
 
     let user_id: String = uuid::UUIDv4.fake();
 

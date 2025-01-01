@@ -1,21 +1,14 @@
 mod structs;
+pub mod traits;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use std::sync::Arc;
 
+pub use crate::quote_api::traits::Database;
 use crate::{database::structs::quotes::Model as Quotes, quote};
 
-#[cfg(test)]
-use mockall::automock;
-
 const RANDOM_QUOTE_URL: &str = "https://api.quotable.io/random";
-
-#[cfg_attr(test, automock)]
-#[async_trait]
-pub trait Database {
-    async fn save_quote(&self, quote: Quotes) -> Result<()>;
-}
 
 pub struct Service {
     db: Arc<dyn Database + Send + Sync>,
@@ -69,6 +62,7 @@ impl quote::Api for Service {
 mod tests {
     use super::*;
 
+    use crate::quote_api::traits::MockDatabase;
     use fake::{
         faker::{lorem, name},
         uuid, Fake, Faker,

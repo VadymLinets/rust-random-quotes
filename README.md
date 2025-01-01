@@ -1,8 +1,14 @@
-# Basic rust service
+# Quotes service
 
 ## Description
 
-It's a basic service that shows how to work with rust and different rust libraries
+It's a service that shows random quotes, allows to like them and show quote that is pretty similar to a specified one
+
+## Additional programs
+
+1. [Taskfile](https://taskfile.dev/installation/) (Optional)
+2. docker-compose or podman-compose
+3. [Postman](https://www.postman.com/downloads/) or [Yaak](https://yaak.app/download)
 
 ## How to run
 

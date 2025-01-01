@@ -37,7 +37,7 @@ pub async fn start(cfg: GlobalConfig) {
     }
 }
 
-pub mod tools {
+pub mod test_tools {
     use anyhow::{Context, Result};
     use fake::{
         faker::{lorem, name},
