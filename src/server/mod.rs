@@ -2,6 +2,7 @@ mod proto {
     include!("proto/quotes.rs");
 }
 mod actix_handlers;
+mod axum_handlers;
 mod graphql;
 mod grpc_handlers;
 mod rocket_handlers;
@@ -10,12 +11,20 @@ mod structs;
 use actix_web::dev::Server;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
-use anyhow::{Context, Result};
+use anyhow::{Context, Ok, Result};
+use axum::{
+    routing::{get, patch},
+    Router,
+};
 use env_logger::Env;
 use juniper::EmptySubscription;
 use proto::quotes_server::QuotesServer;
 use rocket::{build, Config};
 use std::net::SocketAddr;
+use std::time::Duration;
+use tokio::net::TcpListener;
+use tower_http::timeout::TimeoutLayer;
+use tower_http::trace::TraceLayer;
 
 use crate::config::ServerConfig;
 use crate::heartbeat::Heartbeat;
@@ -87,4 +96,26 @@ pub async fn start_grpc(cfg: &ServerConfig, heartbeat: Heartbeat, quotes: Servic
         .context("Failed to start grpc server")?;
 
     Ok(())
+}
+
+pub async fn start_axum(
+    cfg: &ServerConfig,
+    heartbeat: Heartbeat,
+    quotes: Service,
+) -> Result<(TcpListener, Router)> {
+    let addr: SocketAddr = cfg.addr.parse().context("failed to parse address")?;
+
+    let app = Router::new()
+        .route("/heartbeat", get(axum_handlers::heartbeat_handler))
+        .with_state(heartbeat)
+        .route("/", get(axum_handlers::get_quote_handler))
+        .route("/like", patch(axum_handlers::like_quote_handler))
+        .route("/same", get(axum_handlers::get_same_quote_handler))
+        .with_state(quotes)
+        .layer((
+            TraceLayer::new_for_http(),
+            TimeoutLayer::new(Duration::from_secs(10)),
+        ));
+
+    Ok((tokio::net::TcpListener::bind(addr).await?, app))
 }

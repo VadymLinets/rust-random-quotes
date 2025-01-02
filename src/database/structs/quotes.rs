@@ -19,9 +19,9 @@ impl EntityName for Entity {
 pub struct Model {
     pub id: String,
     pub quote: String,
-    pub author: Option<String>,
-    pub likes: Option<i32>,
-    pub tags: Option<Vec<String>>,
+    pub author: String,
+    pub likes: i32,
+    pub tags: Vec<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -55,12 +55,10 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::Text.def(),
-            Self::Quote => ColumnType::Text.def(),
-            Self::Author => ColumnType::Text.def().null(),
-            Self::Likes => ColumnType::Integer.def().null(),
-            Self::Tags => ColumnType::Array(RcOrArc::new(ColumnType::Text))
-                .def()
-                .null(),
+            Self::Quote => ColumnType::Text.def().unique(),
+            Self::Author => ColumnType::Text.def(),
+            Self::Likes => ColumnType::Integer.def(),
+            Self::Tags => ColumnType::Array(RcOrArc::new(ColumnType::Text)).def(),
         }
     }
 }

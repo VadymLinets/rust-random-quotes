@@ -6,6 +6,7 @@ mod quote_api;
 mod server;
 
 use std::sync::Arc;
+use tokio::signal;
 
 use config::GlobalConfig;
 use database::seaorm::SeaORM;
@@ -33,9 +34,46 @@ async fn main() {
         server::start_rocket(&cfg.server_config, heartbeat, quote)
             .await
             .expect("failed to create server");
+    } else if cfg.server_config.service_type.eq("axum") {
+        tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::INFO)
+            .init();
+
+        let (listener, app) = server::start_axum(&cfg.server_config, heartbeat, quote)
+            .await
+            .expect("failed to create server");
+
+        axum::serve(listener, app)
+            .with_graceful_shutdown(shutdown_signal())
+            .await
+            .expect("failed to start server");
     } else if cfg.server_config.service_type.eq("grpc") {
         server::start_grpc(&cfg.server_config, heartbeat, quote)
             .await
             .expect("failed to create server");
+    }
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
     }
 }

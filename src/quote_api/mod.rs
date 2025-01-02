@@ -8,7 +8,7 @@ use std::sync::Arc;
 pub use crate::quote_api::traits::Database;
 use crate::{database::structs::quotes::Model as Quotes, quote};
 
-const RANDOM_QUOTE_URL: &str = "https://api.quotable.io/random";
+const RANDOM_QUOTE_URL: &str = "https://dummyjson.com/quotes/random";
 
 pub struct Service {
     db: Arc<dyn Database + Send + Sync>,
@@ -65,7 +65,7 @@ mod tests {
     use crate::quote_api::traits::MockDatabase;
     use fake::{
         faker::{lorem, name},
-        uuid, Fake, Faker,
+        Fake, Faker,
     };
     use mockall::predicate::*;
     use mockito::Server;
@@ -73,8 +73,8 @@ mod tests {
     #[tokio::test]
     async fn test_get_random_quote_success() {
         let quote: structs::Quote = structs::Quote {
-            id: uuid::UUIDv4.fake(),
-            content: lorem::en::Sentence(5..10).fake(),
+            id: Faker.fake(),
+            quote: lorem::en::Sentence(5..10).fake(),
             author: name::en::Name().fake(),
             tags: Faker.fake(),
         };

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::database::structs::quotes::Model as Quotes;
 
-#[derive(PartialEq, PartialOrd, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, PartialOrd, Debug, Serialize, Deserialize, Default)]
 pub struct Quote {
     pub id: String,
     pub quote: String,
@@ -15,8 +15,8 @@ pub fn from_database_quote_to_quote(quote: Quotes) -> Quote {
     Quote {
         id: quote.id,
         quote: quote.quote,
-        author: quote.author.unwrap_or_default(),
-        tags: quote.tags.unwrap_or_default(),
-        likes: quote.likes.unwrap_or_default(),
+        author: quote.author,
+        tags: quote.tags,
+        likes: quote.likes,
     }
 }

@@ -30,6 +30,14 @@ pub async fn start(cfg: GlobalConfig) {
         server::start_rocket(&cfg.server_config, heartbeat, quote)
             .await
             .expect("failed to create server");
+    } else if cfg.server_config.service_type.eq("axum") {
+        let (listener, app) = server::start_axum(&cfg.server_config, heartbeat, quote)
+            .await
+            .expect("failed to create server");
+
+        axum::serve(listener, app)
+            .await
+            .expect("failed to start server");
     } else if cfg.server_config.service_type.eq("grpc") {
         server::start_grpc(&cfg.server_config, heartbeat, quote)
             .await
@@ -72,7 +80,7 @@ pub mod test_tools {
         pub fn get_same_quote(&self) -> quote_model {
             quote_model {
                 author: self.main_quote.author.clone(),
-                likes: Some(0i32),
+                likes: 0i32,
                 tags: self.main_quote.tags.clone(),
                 ..get_random_quote()
             }
@@ -129,9 +137,9 @@ pub mod test_tools {
         quote_model {
             id: uuid::UUIDv4.fake(),
             quote: lorem::en::Sentence(5..10).fake(),
-            author: Some(name::en::Name().fake()),
-            likes: Some(0i32),
-            tags: Some(Faker.fake()),
+            author: name::en::Name().fake(),
+            likes: 0i32,
+            tags: Faker.fake(),
         }
     }
 }

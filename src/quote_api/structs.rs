@@ -4,19 +4,18 @@ use crate::database::structs::quotes::Model as Quotes;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Quote {
-    #[serde(rename = "_id")]
-    pub id: String,
-    pub content: String,
+    pub id: i64,
+    pub quote: String,
     pub author: String,
-    pub tags: Vec<String>,
+    pub tags: Option<Vec<String>>,
 }
 
 pub fn to_database(quote: Quote) -> Quotes {
     Quotes {
-        id: quote.id,
-        quote: quote.content,
-        author: Some(quote.author),
-        tags: Some(quote.tags),
-        likes: Some(0i32),
+        id: quote.id.to_string(),
+        quote: quote.quote,
+        author: quote.author,
+        tags: quote.tags.unwrap_or_default(),
+        likes: 0i32,
     }
 }

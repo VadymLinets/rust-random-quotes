@@ -2,6 +2,5 @@
 
 pub mod prelude;
 
-pub mod goose_db_version;
 pub mod quotes;
 pub mod views;

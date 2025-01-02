@@ -19,7 +19,7 @@ impl EntityName for Entity {
 pub struct Model {
     pub user_id: String,
     pub quote_id: String,
-    pub liked: Option<bool>,
+    pub liked: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -53,7 +53,7 @@ impl ColumnTrait for Column {
         match self {
             Self::UserId => ColumnType::Text.def(),
             Self::QuoteId => ColumnType::Text.def(),
-            Self::Liked => ColumnType::Boolean.def().null(),
+            Self::Liked => ColumnType::Boolean.def(),
         }
     }
 }

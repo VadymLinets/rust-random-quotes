@@ -105,7 +105,7 @@ async fn like_quote(addr: &str, tools: &Tools, client: &reqwest::Client, user_id
         .get_quote(&quote.id)
         .await
         .expect("failed to get quote from database");
-    assert_eq!(database_quote.likes.unwrap_or_default(), 1);
+    assert_eq!(database_quote.likes, 1);
 }
 
 async fn get_same_quote(addr: &str, tools: &Tools, client: &reqwest::Client, user_id: &str) {
