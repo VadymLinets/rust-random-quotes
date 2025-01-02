@@ -73,4 +73,13 @@ tasks:
   test:
     desc: Run tests.
     cmds:
-      - cargo test
+      - cargo install cargo-nextest --locked
+      - cargo nextest run
+
+  covarage-test:
+    desc: Run tests.
+    aliases: [ctest]
+    cmds:
+      - cargo install cargo-nextest --locked
+      - cargo install cargo-llvm-cov
+      - cargo llvm-cov nextest

@@ -4,9 +4,9 @@ package quotes;
 
 service Quotes {
   rpc Heartbeat(Empty) returns (Empty) {}
-  rpc GetQuoteHandler (UserIDRequest) returns (Quote) {}
-  rpc GetSameQuoteHandler (UserAndQuoteIDRequest) returns (Quote) {}
-  rpc LikeQuoteHandler (UserAndQuoteIDRequest) returns (Empty) {}
+  rpc GetQuoteHandler(UserIDRequest) returns (Quote) {}
+  rpc GetSameQuoteHandler(UserAndQuoteIDRequest) returns (Quote) {}
+  rpc LikeQuoteHandler(UserAndQuoteIDRequest) returns (Empty) {}
 }
 
 message UserIDRequest {
@@ -18,12 +18,12 @@ message UserAndQuoteIDRequest {
   string quote_id = 2;
 }
 
-message Empty{}
+message Empty {}
 
 message Quote {
-    string id = 1;
-    string quote = 2;
-    string author = 3;
-    repeated string tags = 4;
-    int64 likes = 5;
+  string id = 1;
+  string quote = 2;
+  string author = 3;
+  repeated string tags = 4;
+  int64 likes = 5;
 }
