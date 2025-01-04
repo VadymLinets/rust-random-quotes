@@ -41,7 +41,7 @@ tasks:
     dir: "{{.USER_WORKING_DIR}}"
     aliases: [mg]
     env:
-      POSTGRES_URL: postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_ADDR}}/{{.POSTGRES_DB}}
+      POSTGRES_URL: postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@{{.POSTGRES_HOST}}:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}
     cmds:
       - cargo install sea-orm-cli
       - sea-orm-cli migrate -u $POSTGRES_URL -s public

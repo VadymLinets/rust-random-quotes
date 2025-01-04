@@ -1,20 +1,20 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use async_trait::async_trait;
 use migration::{Migrator, MigratorTrait};
 use sea_orm::sea_query::SimpleExpr;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{sea_query, QueryOrder};
+use sea_orm::{sea_query, ConnectOptions, QueryOrder};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Database, DatabaseConnection, EntityTrait, QueryFilter,
     QuerySelect, QueryTrait,
 };
-use thiserror::Error;
 
 use crate::config::ORMConfig;
 use crate::{
     heartbeat as heartbeat_service, quote as quote_service, quote_api as quote_api_service,
 };
 
+use super::errors::Error::ErrNotFound;
 use super::structs::prelude::Quotes as quotes;
 use super::structs::prelude::Views as views;
 use super::structs::quotes::ActiveModel as quotes_active_model;
@@ -23,12 +23,6 @@ use super::structs::quotes::Model as quotes_model;
 use super::structs::views::ActiveModel as views_active_model;
 use super::structs::views::Column as views_columns;
 use super::structs::views::Model as views_model;
-
-#[derive(Error, Debug, PartialEq)]
-pub enum Errors {
-    #[error("Database record not found")]
-    ErrNotFound,
-}
 
 pub struct SeaORM {
     db: DatabaseConnection,
@@ -43,7 +37,7 @@ impl SeaORM {
         let quote = quotes::find_by_id(quote_id).one(&self.db).await?;
         match quote {
             Some(quote) => Ok(quote),
-            None => Err(Errors::ErrNotFound.into()),
+            None => Err(anyhow!(ErrNotFound)),
         }
     }
 
@@ -92,7 +86,7 @@ impl SeaORM {
 
         match quote {
             Some(quote) => Ok(quote),
-            None => Err(Errors::ErrNotFound.into()),
+            None => Err(anyhow!(ErrNotFound)),
         }
     }
 
@@ -105,7 +99,7 @@ impl SeaORM {
 
         match view {
             Some(view) => Ok(view),
-            None => Err(Errors::ErrNotFound.into()),
+            None => Err(anyhow!(ErrNotFound)),
         }
     }
 
@@ -174,7 +168,10 @@ impl SeaORM {
     }
 
     pub async fn new(cfg: &ORMConfig) -> Result<Self> {
-        let connection = Database::connect(&cfg.dsn)
+        let mut opt = ConnectOptions::new(&cfg.dsn);
+        opt.sqlx_logging(false);
+
+        let connection = Database::connect(opt)
             .await
             .context("failed to connect to db")?;
 

@@ -7,4 +7,9 @@ services:
     container_name: quotes
     ports:
       - '${SERVER_CONTAINER_PORT}:1140'
+    environment:
+      ADDR: "0.0.0.0:1140"
+      SERVICE_TYPE: ${SERVICE_TYPE}
+      DSN: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      RANDOM_QUOTE_CHANCE: ${RANDOM_QUOTE_CHANCE}
     restart: always

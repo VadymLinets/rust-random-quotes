@@ -5,7 +5,7 @@ use testcontainers::{runners::AsyncRunner, ImageExt};
 use testcontainers_modules::postgres;
 use tokio::time::sleep;
 
-use quotes_rs::test_tools::Tools;
+use quotes_rs::{app, test_tools::Tools};
 
 #[tokio::test]
 async fn test_integration() {
@@ -44,7 +44,7 @@ async fn test_integration() {
         .expect("failed to create tools");
     let cfg = tools.get_config();
 
-    let server = tokio::spawn(enclose! {(cfg) async move { quotes_rs::start(cfg).await }});
+    let server = tokio::spawn(enclose! {(cfg) async move { app::start(cfg).await }});
     sleep(Duration::from_secs(2)).await; // wait until the server is ready
 
     let user_id: String = uuid::UUIDv4.fake();

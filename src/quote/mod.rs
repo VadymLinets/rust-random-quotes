@@ -6,7 +6,7 @@ use rand::Rng;
 use std::sync::Arc;
 
 use crate::config::QuotesConfig;
-use crate::database::seaorm;
+use crate::database::errors::Error as DatabaseErrors;
 use crate::database::structs::quotes::Model as Quotes;
 
 use structs::from_database_quote_to_quote;
@@ -75,13 +75,13 @@ impl Service {
 
         let quote = match self.db.get_same_quote(user_id, &viewed_quote).await {
             Ok(quote) => quote,
-            Err(err) => match err.downcast_ref::<seaorm::Errors>() {
-                Some(seaorm::Errors::ErrNotFound) => self
+            Err(err) => match err.downcast_ref::<DatabaseErrors>() {
+                Some(DatabaseErrors::ErrNotFound) => self
                     .api
                     .get_random_quote()
                     .await
                     .context("failed to get random quote")?,
-                None => return Err(err.context("failed to get same quote")),
+                _ => return Err(err.context("failed to get same quote")),
             },
         };
 
@@ -135,6 +135,7 @@ impl Service {
 
 #[cfg(test)]
 mod tests {
+    use anyhow::anyhow;
     use fake::{
         faker::{lorem, name},
         uuid, Fake, Faker,
@@ -275,7 +276,7 @@ mod tests {
 
         db.expect_get_same_quote()
             .with(eq(USER_ID.clone()), eq(QUOTE.clone()))
-            .returning(|_, _| Err(seaorm::Errors::ErrNotFound.into()));
+            .returning(|_, _| Err(anyhow!(DatabaseErrors::ErrNotFound)));
 
         db.expect_mark_as_viewed()
             .with(eq(USER_ID.clone()), eq(QUOTE_ID.clone()))

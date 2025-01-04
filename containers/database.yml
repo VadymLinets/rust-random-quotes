@@ -5,7 +5,7 @@ services:
     image: postgres:latest
     container_name: db
     ports:
-      - '${POSTGRES_ADDR}:5432'
+      - '${POSTGRES_PORT}:5432'
     restart: always
     volumes:
       - /tmp/data/db:/var/lib/postgresql/data:z

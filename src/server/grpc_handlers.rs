@@ -22,7 +22,7 @@ impl Quotes for Grpc {
         match self.heartbeat.ping_database().await {
             Ok(_) => Ok(Response::new(Empty {})),
             Err(err) => {
-                log::error!("failed to ping database: {err}");
+                log::error!("failed to ping database: {:#}", err);
                 Err(Status::new(
                     tonic::Code::Internal,
                     "failed to ping database",
@@ -45,7 +45,7 @@ impl Quotes for Grpc {
                 likes: quote.likes as i64,
             })),
             Err(err) => {
-                log::error!("failed to get quote: {err}");
+                log::error!("failed to get quote: {:#}", err);
                 Err(Status::new(tonic::Code::Internal, "failed to get quote"))
             }
         }
@@ -69,7 +69,7 @@ impl Quotes for Grpc {
                 likes: quote.likes as i64,
             })),
             Err(err) => {
-                log::error!("failed to get same quote: {err}");
+                log::error!("failed to get same quote: {:#}", err);
                 Err(Status::new(
                     tonic::Code::Internal,
                     "failed to get same quote",
@@ -90,7 +90,7 @@ impl Quotes for Grpc {
         {
             Ok(_) => Ok(Response::new(Empty {})),
             Err(err) => {
-                log::error!("failed to like quote: {err}");
+                log::error!("failed to like quote: {:#}", err);
                 Err(Status::new(tonic::Code::Internal, "failed to like quote"))
             }
         }

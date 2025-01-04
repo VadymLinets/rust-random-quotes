@@ -1,7 +1,6 @@
 # Configs
 .env
 .env.example
-config.example.toml
 
 # IDE
 .idea
@@ -15,6 +14,7 @@ migration/target
 # Git
 .git
 .gitignore
+.github
 
 # Other
 containers

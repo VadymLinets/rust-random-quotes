@@ -1,9 +1,0 @@
-[server_config]
-addr = "0.0.0.0:1140"
-service_type = "rocket" # [rocket, actix, grpc]
-
-[orm_config]
-dsn="postgres://postgres:postgres@localhost:5432/quotes"
-
-[quotes_config]
-random_quote_chance=20.0

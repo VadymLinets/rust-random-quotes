@@ -21,10 +21,9 @@ use juniper::EmptySubscription;
 use proto::quotes_server::QuotesServer;
 use rocket::{build, Config};
 use std::net::SocketAddr;
-use std::time::Duration;
 use tokio::net::TcpListener;
-use tower_http::timeout::TimeoutLayer;
-use tower_http::trace::TraceLayer;
+use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
+use tracing::Level;
 
 use crate::config::ServerConfig;
 use crate::heartbeat::Heartbeat;
@@ -112,10 +111,11 @@ pub async fn start_axum(
         .route("/like", patch(axum_handlers::like_quote_handler))
         .route("/same", get(axum_handlers::get_same_quote_handler))
         .with_state(quotes)
-        .layer((
-            TraceLayer::new_for_http(),
-            TimeoutLayer::new(Duration::from_secs(10)),
-        ));
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        );
 
     Ok((tokio::net::TcpListener::bind(addr).await?, app))
 }

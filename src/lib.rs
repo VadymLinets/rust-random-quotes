@@ -1,49 +1,10 @@
+pub mod app;
 mod config;
 mod database;
 mod heartbeat;
 mod quote;
 mod quote_api;
 mod server;
-
-use std::sync::Arc;
-
-use config::GlobalConfig;
-use database::seaorm::SeaORM;
-
-pub async fn start(cfg: GlobalConfig) {
-    let db = SeaORM::new(&cfg.orm_config)
-        .await
-        .expect("failed to start database");
-
-    let db = Arc::new(db);
-    let heartbeat = heartbeat::Heartbeat::new(db.clone());
-    let quote_api = quote_api::Service::new(db.clone());
-    let quote = quote::Service::new(&cfg.quotes_config, db, Arc::new(quote_api));
-
-    if cfg.server_config.service_type.eq("actix") {
-        server::start_actix(&cfg.server_config, heartbeat, quote)
-            .await
-            .expect("failed to create server")
-            .await
-            .expect("failed to start server");
-    } else if cfg.server_config.service_type.eq("rocket") {
-        server::start_rocket(&cfg.server_config, heartbeat, quote)
-            .await
-            .expect("failed to create server");
-    } else if cfg.server_config.service_type.eq("axum") {
-        let (listener, app) = server::start_axum(&cfg.server_config, heartbeat, quote)
-            .await
-            .expect("failed to create server");
-
-        axum::serve(listener, app)
-            .await
-            .expect("failed to start server");
-    } else if cfg.server_config.service_type.eq("grpc") {
-        server::start_grpc(&cfg.server_config, heartbeat, quote)
-            .await
-            .expect("failed to create server");
-    }
-}
 
 pub mod test_tools {
     use anyhow::{Context, Result};
@@ -53,10 +14,10 @@ pub mod test_tools {
     };
     use rand::seq::SliceRandom;
 
-    use super::config::{GlobalConfig, ORMConfig, QuotesConfig, ServerConfig};
-    use super::database::seaorm::SeaORM;
-    use super::database::structs::quotes::Model as quote_model;
-    use super::quote::structs as quote_structs;
+    use crate::config::{GlobalConfig, ORMConfig, QuotesConfig, ServerConfig};
+    use crate::database::seaorm::SeaORM;
+    use crate::database::structs::quotes::Model as quote_model;
+    use crate::quote::structs as quote_structs;
 
     pub struct Tools {
         cfg: GlobalConfig,
@@ -108,7 +69,7 @@ pub mod test_tools {
             let cfg = GlobalConfig {
                 server_config: ServerConfig {
                     addr: "0.0.0.0:1141".to_string(),
-                    service_type: ["actix", "rocket"]
+                    service_type: ["actix", "rocket", "axum"]
                         .choose(&mut rand::thread_rng())
                         .unwrap()
                         .to_string(),
@@ -143,3 +104,4 @@ pub mod test_tools {
         }
     }
 }
+
