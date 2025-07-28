@@ -86,7 +86,7 @@ pub async fn start_grpc(cfg: &ServerConfig, heartbeat: Heartbeat, quotes: Servic
     let addr: SocketAddr = cfg.addr.parse().context("failed to parse address")?;
     let srv = Grpc::new(heartbeat, quotes);
 
-    println!("GreeterServer listening on {}", addr);
+    println!("GreeterServer listening on {addr}");
 
     tonic::transport::Server::builder()
         .add_service(QuotesServer::new(srv))

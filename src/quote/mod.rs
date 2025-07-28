@@ -106,7 +106,7 @@ impl Service {
     }
 
     async fn randomize_quote(&self, quotes: &[Quotes]) -> Result<Quotes> {
-        let random_percent = rand::thread_rng().gen_range(0.0..101.0);
+        let random_percent = rand::rng().random_range(0.0..101.0);
         if (ONE_HUNDRED_PERCENT - self.cfg.random_quote_chance) > random_percent
             && !quotes.is_empty()
         {

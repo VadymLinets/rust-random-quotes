@@ -12,7 +12,7 @@ pub mod test_tools {
         faker::{lorem, name},
         uuid, Fake, Faker,
     };
-    use rand::seq::SliceRandom;
+    use rand::seq::IndexedRandom;
 
     use crate::config::{GlobalConfig, ORMConfig, QuotesConfig, ServerConfig};
     use crate::database::seaorm::SeaORM;
@@ -70,7 +70,7 @@ pub mod test_tools {
                 server_config: ServerConfig {
                     addr: "0.0.0.0:1141".to_string(),
                     service_type: ["actix", "rocket", "axum"]
-                        .choose(&mut rand::thread_rng())
+                        .choose(&mut rand::rng())
                         .unwrap()
                         .to_string(),
                 },

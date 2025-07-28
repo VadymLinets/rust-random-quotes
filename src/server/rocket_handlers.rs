@@ -56,7 +56,7 @@ async fn heartbeat_handler(heartbeat: &State<Heartbeat>) -> Status {
     match heartbeat.ping_database().await {
         Ok(_) => Status::Ok,
         Err(err) => {
-            log::error!("failed to ping database: {:#}", err);
+            log::error!("failed to ping database: {err:#}");
             Status::InternalServerError
         }
     }
@@ -70,7 +70,7 @@ async fn get_quote_handler(
     match quotes.get_quote(&user_id).await {
         Ok(quote) => status::Custom(Status::Ok, Some(Json(quote))),
         Err(err) => {
-            log::error!("failed to get quote: {:#}", err);
+            log::error!("failed to get quote: {err:#}");
             status::Custom(Status::InternalServerError, None)
         }
     }
@@ -81,7 +81,7 @@ async fn like_quote_handler(quote_id: String, user_id: String, quotes: &State<Se
     match quotes.like_quote(&user_id, &quote_id).await {
         Ok(_) => Status::Ok,
         Err(err) => {
-            log::error!("failed to like quote: {:#}", err);
+            log::error!("failed to like quote: {err:#}");
             Status::InternalServerError
         }
     }
@@ -96,14 +96,14 @@ async fn get_same_quote_handler(
     match quotes.get_same_quote(&user_id, &quote_id).await {
         Ok(quote) => status::Custom(Status::Ok, Some(Json(quote))),
         Err(err) => {
-            log::error!("failed to get same quote: {:#}", err);
+            log::error!("failed to get same quote: {err:#}");
             status::Custom(Status::InternalServerError, None)
         }
     }
 }
 
 #[get("/graphql?<request..>")]
-async fn get_graphql<'a>(
+async fn get_graphql(
     quotes: &State<Service>,
     heartbeat: &State<Heartbeat>,
     request: GraphQLRequest,
@@ -121,7 +121,7 @@ async fn get_graphql<'a>(
 }
 
 #[post("/graphql", data = "<request>")]
-async fn post_graphql<'a>(
+async fn post_graphql(
     quotes: &State<Service>,
     heartbeat: &State<Heartbeat>,
     request: GraphQLRequest,

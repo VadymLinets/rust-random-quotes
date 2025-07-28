@@ -24,7 +24,7 @@ async fn test_integration() {
 
     let runs_in_container = env::var("RUNS_IN_CONTAINER")
         .ok()
-        .map_or(false, |value| value.eq("true"));
+        .is_some_and(|value| value.eq("true"));
 
     let connection_string = match runs_in_container {
         true => format!(
@@ -69,7 +69,7 @@ async fn get_quote(addr: &str, tools: &Tools, client: &reqwest::Client, user_id:
     let quote = tools.get_main_quote();
 
     let resp = client
-        .get(format!("http://{}/", addr))
+        .get(format!("http://{addr}/"))
         .query(&[("user_id", user_id)])
         .send()
         .await
@@ -94,7 +94,7 @@ async fn like_quote(addr: &str, tools: &Tools, client: &reqwest::Client, user_id
     let quote = tools.get_main_quote();
 
     let resp = client
-        .patch(format!("http://{}/like", addr))
+        .patch(format!("http://{addr}/like"))
         .query(&[("user_id", user_id), ("quote_id", &quote.id)])
         .send()
         .await
@@ -124,7 +124,7 @@ async fn get_same_quote(addr: &str, tools: &Tools, client: &reqwest::Client, use
         .expect("failed to save random quote");
 
     let resp = client
-        .get(format!("http://{}/same", addr))
+        .get(format!("http://{addr}/same"))
         .query(&[("user_id", user_id), ("quote_id", &quote.id)])
         .send()
         .await

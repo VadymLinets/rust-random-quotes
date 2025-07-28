@@ -12,7 +12,7 @@ async fn heartbeat_handler(heartbeat: Data<Heartbeat>) -> impl Responder {
     match heartbeat.ping_database().await {
         Ok(_) => HttpResponse::Ok(),
         Err(err) => {
-            log::error!("failed to ping database: {:#}", err);
+            log::error!("failed to ping database: {err:#}");
             HttpResponse::InternalServerError()
         }
     }
@@ -26,7 +26,7 @@ async fn get_quote_handler(
     match quotes.get_quote(&query.user_id).await {
         Ok(quote) => HttpResponse::Ok().json(quote),
         Err(err) => {
-            log::error!("failed to get quote: {:#}", err);
+            log::error!("failed to get quote: {err:#}");
             HttpResponse::InternalServerError().finish()
         }
     }
@@ -40,7 +40,7 @@ async fn like_quote_handler(
     match quotes.like_quote(&query.user_id, &query.quote_id).await {
         Ok(_) => HttpResponse::Ok(),
         Err(err) => {
-            log::error!("failed to like quote: {:#}", err);
+            log::error!("failed to like quote: {err:#}");
             HttpResponse::InternalServerError()
         }
     }
@@ -54,7 +54,7 @@ async fn get_same_quote_handler(
     match quotes.get_same_quote(&query.user_id, &query.quote_id).await {
         Ok(quote) => HttpResponse::Ok().json(quote),
         Err(err) => {
-            log::error!("failed to get same quote: {:#}", err);
+            log::error!("failed to get same quote: {err:#}");
             HttpResponse::InternalServerError().finish()
         }
     }
